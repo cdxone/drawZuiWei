@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
-    <com.example.drawzuiwei.MyView
+    <com.example.drawzuiwei.SeatSelectView
         android:id="@+id/view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
