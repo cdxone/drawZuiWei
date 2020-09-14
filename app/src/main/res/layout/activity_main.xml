@@ -18,17 +18,22 @@
         android:orientation="vertical"
         >
         <Button
-            android:id="@+id/btn_add"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:background="@drawable/add"
+            android:id="@+id/btn_gl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="过滤"
             />
         <Button
-            android:id="@+id/btn_reduce"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:background="@drawable/reduce"
-            android:layout_marginTop="10dp"
+            android:id="@+id/btn_gl2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="过滤2"
+            />
+        <Button
+            android:id="@+id/btn_cz"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="重置"
             />
     </LinearLayout>
 

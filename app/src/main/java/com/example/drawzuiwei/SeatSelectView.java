@@ -1,3 +1,4 @@
+//package com.haidilao.hailehui.weex.component.view;
 package com.example.drawzuiwei;
 
 import android.content.Context;
@@ -7,26 +8,33 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.Typeface;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 
 import com.example.drawzuiwei.bean.Point;
+//import com.haidilao.hailehui.model.Point;
+//import com.haidilao.hailehui.R;
+
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SeatSelectView extends View {
+public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callback {
 
     private static final int UPDATA = 100;
-    private static final float CHANGE_LENGTH = 2;
-    private static final String CHECK = "check";
+    private static final float CHANGE_LENGTH = 3;
     private Context mContext;//上下文
     Handler handler = new Handler() {
         @Override
@@ -45,7 +53,7 @@ public class SeatSelectView extends View {
     private Paint mZhuoWeiPaint;//桌位画笔
     //画笔颜色
     private int mZhuoWeiWhiteColor = Color.parseColor("#ffffff");//白色;
-    private int mZhuoWeiGrayColor = Color.parseColor("#778899");//灰色;
+    private int mZhuoWeiGrayColor = Color.parseColor("#A9A9A9");//灰色;
     //图像
     private Map<String, Bitmap> bitmapMap;//存储图像的Bitmap
     private Bitmap checkBitmap;//选中的Bitmap
@@ -68,6 +76,7 @@ public class SeatSelectView extends View {
     float PARAM_RATE = 2.5f; // 最终放大的图像是原始尺寸的几倍大小
 
     private static final String TAG = SeatSelectView.class.getSimpleName();
+    private static final String TAG_XX = "xiangxian";
 
 
     private ArrayList<Point> list;
@@ -90,6 +99,8 @@ public class SeatSelectView extends View {
     private float nowPointOneY;
     private float nowPointTwoX;
     private float nowPointTwoY;
+    private SurfaceHolder holder;//SurfaceView的持有者
+    private HandlerThread handlerThread;
 
 
     public SeatSelectView(Context context) {
@@ -99,6 +110,13 @@ public class SeatSelectView extends View {
     public SeatSelectView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mContext = context;
+        //初始化画笔
+        initPaint();
+        //初始化图片
+        loadImg();
+        holder = this.getHolder();
+        //设置SurfaceView的监听，监听是否完成
+        holder.addCallback(this);
         // 手势监听器,用来监听单击事件
         MySimpleOnGestureListener myGestureDetectore = new MySimpleOnGestureListener();
         mGestureDetector = new GestureDetector(myGestureDetectore);
@@ -109,75 +127,81 @@ public class SeatSelectView extends View {
     }
 
 
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        for (int i = 0; i < this.list.size(); i++) {
-            Point item = list.get(i);
-            float x = item.x;
-            float y = item.y;
+    public void drawImg(){
+        Canvas canvas = holder.lockCanvas();
+        canvas.drawColor(Color.WHITE);
 
-            //绘制对应的桌位
-            //1、设置绘制的宽高
-            float width = this.widthHeight;
-            float height = this.widthHeight;
-            //2、给数据源重新设置状态：当前状态不为可选，不为已预订，不为选择状态，那么为不可选状态
-            if (!TextUtils.equals(item.tableStatus,"0")&&!TextUtils.equals(item.tableStatus,"2")&&!TextUtils.equals(item.tableStatus,CHECK)){
-                item.tableStatus = "1";
-            }
-            //3、如果是选择状态，绘制红色背景和白色的对勾
-            if (TextUtils.equals(item.tableStatus,CHECK)){
-                // 绘制红色背景
-                String key = "reserve" + "_" + item.capacity + "_" + item.position + "_" + "state2"  + "_" + item.fx;
-                Bitmap bitmapTemp = bitmapMap.get(key);
-                Bitmap bitmap = big(bitmapTemp, width, height);
-                if (bitmap != null) {
-                    canvas.drawBitmap(bitmap, x, y, mZhuoWeiPaint);
-                }
-                // 居中白色对勾
-                float duigouWidth = width / 2;
-                float duigouHeight = height / 2;
-                Bitmap bitmapDuiGou = big(checkBitmap,width / 2, height / 2);
-                canvas.drawBitmap(bitmapDuiGou,x + width / 2 - duigouWidth / 2,y + height / 2 - duigouHeight / 2 ,mZhuoWeiPaint);
-            } else {
-                //4、如果不是选择状态，根据状态设置不同的图片
-                String key = "reserve" + "_" + item.capacity + "_" + item.position + "_" + "state" + item.tableStatus + "_" + item.fx;
-                Bitmap bitmapTemp = bitmapMap.get(key);
-                Bitmap bitmap = big(bitmapTemp, width, height);
-                if (bitmap != null) {
-                    canvas.drawBitmap(bitmap, x, y, mZhuoWeiPaint);
-                }
-            }
+        Log.e(TAG,"绘制开始");
+        if (list != null) {
+            for (int i = 0; i < this.list.size(); i++) {
+                Point item = list.get(i);
+                float x = item.x;
+                float y = item.y;
 
-            // 绘制对应的座位号
-            // 如果不是选择状态，才绘制桌位号
-            if (!TextUtils.equals(item.tableStatus,CHECK)){
-                // 1、缩放的比例
-                float rateTemp = this.widthHeight / this.originalWidthHeight;
-                // 2、设置画笔状态
-                mZhuoWeiNumPaint.setTextSize(mZhuoWeiFontSize * rateTemp);
-                if (TextUtils.equals(item.tableStatus,"0")){//可预订,画笔设置为白色
-                    mZhuoWeiNumPaint.setColor(mZhuoWeiWhiteColor);
-                } else if (!TextUtils.equals(item.tableStatus,"0") && !TextUtils.equals(item.tableStatus,"2")){//不可预定，画笔设置为灰色
-                    mZhuoWeiNumPaint.setColor(mZhuoWeiGrayColor);
+                //绘制对应的桌位
+                //1、设置绘制的宽高
+                float width = this.widthHeight;
+                float height = this.widthHeight;
+                //2、给数据源重新设置状态：当前状态不为可预订，不为已预订，不为选择状态，那么为不可选状态
+                if (!TextUtils.equals(item.tableStatus,"0")&&!TextUtils.equals(item.tableStatus,"2")&&!TextUtils.equals(item.tableStatus,Point.MY_CHECK)){
+                    item.tableStatus = "1";
                 }
-                // 3、求得文字对应的宽高
-                float textHeight = measureTextHeight(mZhuoWeiNumPaint) * 2 / 3;
-                String tableNo = item.tableNo;// 桌号
-                float textWidth = 0;// 桌号的宽度
-                if ((tableNo + "").length() == 1) {
-                    textWidth = mZhuoWeiNumPaint.measureText("1");
-                } else if ((tableNo + "").length() == 2) {
-                    textWidth = mZhuoWeiNumPaint.measureText("11");
-                } else if ((tableNo + "").length() == 3) {
-                    textWidth = mZhuoWeiNumPaint.measureText("111");
+                //3、如果是选择状态，绘制红色背景和白色的对勾
+                if (TextUtils.equals(item.tableStatus,Point.MY_CHECK)){
+                    // 绘制红色背景
+                    String key = "reserve" + "_" + item.capacity + "_" + item.position + "_" + "state2"  + "_" + item.fx;
+                    Bitmap bitmapTemp = bitmapMap.get(key);
+                    Bitmap bitmap = big(bitmapTemp, width, height);
+                    if (bitmap != null) {
+                        canvas.drawBitmap(bitmap, x, y, mZhuoWeiPaint);
+                    }
+                    // 居中白色对勾
+                    float duigouWidth = width / 2;
+                    float duigouHeight = height / 2;
+                    Bitmap bitmapDuiGou = big(checkBitmap,width / 2, height / 2);
+                    canvas.drawBitmap(bitmapDuiGou,x + width / 2 - duigouWidth / 2,y + height / 2 - duigouHeight / 2 ,mZhuoWeiPaint);
+                } else {
+                    //4、如果不是选择状态，根据状态设置不同的图片
+                    String key = "reserve" + "_" + item.capacity + "_" + item.position + "_" + "state" + item.tableStatus + "_" + item.fx;
+                    Bitmap bitmapTemp = bitmapMap.get(key);
+                    Bitmap bitmap = big(bitmapTemp, width, height);
+                    if (bitmap != null) {
+                        canvas.drawBitmap(bitmap, x, y, mZhuoWeiPaint);
+                    }
                 }
-                // 4、计算中心点的位置
-                float centerX = x + width / 2;
-                float centerY = y + height / 2;
-                // 5、绘制桌位文字
-                canvas.drawText(tableNo, centerX - textWidth / 2, centerY + textHeight / 2, mZhuoWeiNumPaint);
+
+                // 绘制对应的座位号
+                // 如果不是选择状态，才绘制桌位号
+                if (!TextUtils.equals(item.tableStatus,Point.MY_CHECK)){
+                    // 1、缩放的比例
+                    float rateTemp = this.widthHeight / this.originalWidthHeight;
+                    // 2、设置画笔状态
+                    mZhuoWeiNumPaint.setTextSize(mZhuoWeiFontSize * rateTemp);
+                    if (TextUtils.equals(item.tableStatus,"0") || TextUtils.equals(item.tableStatus,"2")){//可预订和不可预定，画笔设置为白色
+                        mZhuoWeiNumPaint.setColor(mZhuoWeiWhiteColor);
+                    } else if (!TextUtils.equals(item.tableStatus,"0") && !TextUtils.equals(item.tableStatus,"2")){//不可预定，画笔设置为灰色
+                        mZhuoWeiNumPaint.setColor(mZhuoWeiGrayColor);
+                    }
+                    // 3、求得文字对应的宽高
+                    float textHeight = measureTextHeight(mZhuoWeiNumPaint) * 2 / 3;
+                    String tableNo = item.tableNo;// 桌号
+                    float textWidth = 0;// 桌号的宽度
+                    if ((tableNo + "").length() == 1) {
+                        textWidth = mZhuoWeiNumPaint.measureText("1");
+                    } else if ((tableNo + "").length() == 2) {
+                        textWidth = mZhuoWeiNumPaint.measureText("11");
+                    } else if ((tableNo + "").length() == 3) {
+                        textWidth = mZhuoWeiNumPaint.measureText("111");
+                    }
+                    // 4、计算中心点的位置
+                    float centerX = x + width / 2;
+                    float centerY = y + height / 2;
+                    // 5、绘制桌位文字
+                    canvas.drawText(tableNo, centerX - textWidth / 2, centerY + textHeight / 2, mZhuoWeiNumPaint);
+                }
             }
+            Log.e(TAG,"绘制完成");
+            holder.unlockCanvasAndPost(canvas);
         }
     }
 
@@ -201,20 +225,18 @@ public class SeatSelectView extends View {
 
     public void setData(ArrayList<Point> list) {
         this.list = list;
+        Log.e(TAG,"setData");
         // 初始化参数
         initParams();
+        Log.e(TAG,"初始化参数完成");
         // 绘制
-        invalidate();
+        //invalidate();
     }
 
     private void initParams() {
         // 获得容器的宽高
         containerWidth = getWidth();
         containerHeight = getHeight();
-        // 设置画笔
-        initPaint();
-        // 缓存图片
-        loadImg();
         // 获取xpoint和ypoint的最大值和最小值
         MaxMin maxMin = getMaxMin();
         float maxXPoint = maxMin.maxXPoint;
@@ -272,6 +294,82 @@ public class SeatSelectView extends View {
         return new MaxMin(maxXPoint,minXPoint,maxYPoint,minYPoint);
     }
 
+    /**
+     * 过滤数据
+     * @param filterData
+     */
+    public void filterData(ArrayList<String> filterData) {
+        if (list != null && filterData != null){//过滤标签
+            for (int i = 0; i < list.size(); i++) {
+                Point point = list.get(i);
+                // 如不不是自己的选中,那么就重置状态到当前状态
+                if (!TextUtils.equals(point.tableStatus,Point.MY_CHECK)){
+                    point.tableStatus = point.tableStatusCopy;
+                }
+                // 可预定状态 或者 我自己选择
+                if (TextUtils.equals(point.tableStatus,Point.KE_YU_DING) || TextUtils.equals(point.tableStatus,Point.MY_CHECK)){
+                    if (!filter(point.tableLableName,filterData)) {
+                        point.tableStatus = Point.BU_KE_YU_DING;
+                    }
+                }
+            }
+        } else if (list != null && filterData == null || filterData.size() == 0){//重置
+            for (int i = 0; i < list.size(); i++) {
+                Point point = list.get(i);
+                if (!TextUtils.equals(point.tableStatus,Point.MY_CHECK)){
+                    point.tableStatus = point.tableStatusCopy;
+                }
+            }
+        }
+        invalidate();
+    }
+
+    /**
+     * 是否是可预订
+     * @return
+     */
+    public boolean filter(String tableLableName,ArrayList<String> list){
+        boolean result = true;
+        if (list != null){
+            for (int i = 0; i < list.size(); i++) {
+                if (!tableLableName.contains(list.get(i))){
+                    result = false;
+                    break;
+                }
+            }
+        }
+        return  result;
+    }
+
+    public static final int MESSAGE_DRAW = 0;
+
+    private void refresh() {
+        Message message = Message.obtain();
+        message.what = MESSAGE_DRAW;
+        handler.removeMessages(MESSAGE_DRAW);
+        handler.sendMessage(message);
+    }
+
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+        Log.e(TAG,"surfaceCreated");
+//        handlerThread = new HandlerThread(TAG);
+//        handlerThread.start();
+        drawImg();
+    }
+
+
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+//        handlerThread.quit();
+//        handlerThread = null;
+    }
+
     class MaxMin{
 
         float maxXPoint = 0;
@@ -323,12 +421,15 @@ public class SeatSelectView extends View {
         checkBitmap = BitmapFactory.decodeResource(getResources(),R.drawable.reserve_duihao);
     }
 
-    // 初始化画笔
+    /**
+     * 初始化画笔
+     */
     private void initPaint() {
         // 桌号画笔
         mZhuoWeiNumPaint = new Paint();
         mZhuoWeiNumPaint.setAntiAlias(true);
         mZhuoWeiNumPaint.setTextSize(mZhuoWeiFontSize);
+        mZhuoWeiNumPaint.setTypeface(Typeface.MONOSPACE); //等宽字体类型
         // 桌位画笔(绘制bitmap不需要设置)
         mZhuoWeiPaint = new Paint();
     }
@@ -417,7 +518,8 @@ public class SeatSelectView extends View {
                         item.y = centerY - longDistance * sinValue;
                     }
                 }
-                invalidate();
+//                invalidate();
+                drawImg();
                 // 保存上一时刻的信息
                 beforePointOneX = nowPointOneX;
                 beforePointOneY = nowPointOneY;
@@ -485,7 +587,8 @@ public class SeatSelectView extends View {
                 }
             }
         }
-        invalidate();
+        //invalidate();
+        drawImg();
         return true;
     }
 
@@ -517,7 +620,7 @@ public class SeatSelectView extends View {
                         //0:可预订 2:已预定 其它:不可预定
                         if (TextUtils.equals(item.tableStatus, "0")) {//可预订
                             selectIndex = i;
-                        } else if (TextUtils.equals(item.tableStatus, CHECK)){
+                        } else if (TextUtils.equals(item.tableStatus, Point.MY_CHECK)){
                             selectIndex = i;
                         }
                         clickXTemp = item.x;
@@ -530,7 +633,7 @@ public class SeatSelectView extends View {
                 if (selectIndex != -1) {
                     // 选中了已选,那么让它变成可选
                     // 如果选中了可选，得考虑首先将所有的变成可选，然后在将这个变成已选
-                    if (TextUtils.equals(list.get(selectIndex).tableStatus, CHECK)) { // 已选
+                    if (TextUtils.equals(list.get(selectIndex).tableStatus, Point.MY_CHECK)) { // 已选
                         list.get(selectIndex).tableStatus = "0"; // 可选
                         beforeSelectIndex = -1;
                     } else if (TextUtils.equals(list.get(selectIndex).tableStatus, "0")) { // 可选
@@ -539,7 +642,7 @@ public class SeatSelectView extends View {
                             list.get(beforeSelectIndex).tableStatus = "0";
                         }
                         // 让点击的变成已选
-                        list.get(selectIndex).tableStatus = CHECK;
+                        list.get(selectIndex).tableStatus = Point.MY_CHECK;
                         // 保存当前已选的下标
                         beforeSelectIndex = selectIndex;
                     }
@@ -551,10 +654,25 @@ public class SeatSelectView extends View {
                 if (widthHeight < originalWidthHeight * PARAM_RATE) {
                     smoothZoomOut();
                 } else {
-                    invalidate();
+                    //invalidate();
+                    drawImg();
                     clickState = false;
                 }
             }
+
+            //获取点击的座位数
+            String tableNo = "";
+            for (int i = 0; i < list.size(); i++) {
+                Point point = list.get(i);
+                if (TextUtils.equals(point.tableStatus,Point.MY_CHECK)){
+                    tableNo = point.tableNo;
+                    break;
+                }
+            }
+            if (mListener != null){
+                mListener.onClick(tableNo);
+            }
+
             return super.onSingleTapUp(e);
         }
     }
@@ -587,25 +705,25 @@ public class SeatSelectView extends View {
             // 4、计算扩大后的位置
             if (dx == 0 && dy == 0) { // 说明是同一个点
             } else if (dx > 0 && dy <= 0) { // 第一象限
-                Log.e(TAG, "第一象限");
+                Log.e(TAG_XX, "第一象限");
                 item.x = clickX - longDistance * cosValue;
                 item.y = clickY + longDistance * sinValue;
             } else if (dx <= 0 && dy <= 0) { // 第二象限
-                Log.e(TAG, "第二象限");
+                Log.e(TAG_XX, "第二象限");
                 item.x = clickX + longDistance * cosValue;
                 item.y = clickY + longDistance * sinValue;
             } else if (dx < 0 && dy > 0) { // 第三象限
-                Log.e(TAG, "第三象限");
+                Log.e(TAG_XX, "第三象限");
                 item.x = clickX + longDistance * cosValue;
                 item.y = clickY - longDistance * sinValue;
             } else if (dx >= 0 && dy > 0) { // 第四象限
-                Log.e(TAG, "第四象限");
+                Log.e(TAG_XX, "第四象限");
                 item.x = clickX - longDistance * cosValue;
                 item.y = clickY - longDistance * sinValue;
             }
         }
         // 5、绘制
-        invalidate();
+        drawImg();
         // 6、根据条件判断是否要继续绘制
         if (this.widthHeight < this.originalWidthHeight * PARAM_RATE) {
             handler.sendEmptyMessageDelayed(UPDATA, 0);
@@ -617,7 +735,7 @@ public class SeatSelectView extends View {
 
     //点击事件
     public interface OnViewClickListener {
-        void onClick();
+        void onClick(String tableNo);
     }
 
     public OnViewClickListener mListener;

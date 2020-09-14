@@ -1,6 +1,13 @@
+//package com.haidilao.hailehui.model;
 package com.example.drawzuiwei.bean;
 
 public class Point {
+
+    public static final String MY_CHECK = "check";//选中
+    public static final String KE_YU_DING = "0";//可预定
+    public static final String YI_YU_DING = "2";//已预定
+    public static final String BU_KE_YU_DING = "1";//不可预定
+
     public float xpoint;//原始的位置
     public float ypoint;//原始的位置
     public float x;//页面中的x位置
@@ -16,6 +23,7 @@ public class Point {
      * 桌位显示状态 4:不可预定
      */
     public String tableStatus;//状态
+    public String tableStatusCopy;//状态
     public String tableLableName;//标签：靠窗
     public String position;//位置 0=大厅，1=包间
     public String fx;
