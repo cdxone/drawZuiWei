@@ -1,8 +1,11 @@
 package com.example.drawzuiwei;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.Toast;
@@ -14,6 +17,16 @@ import com.example.drawzuiwei.bean.Point;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
+    SeatSelectView view;
+    ArrayList<Point> list;
+
+    private Handler handler = new Handler(){
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            super.handleMessage(msg);
+            view.setData(list);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,21 +34,20 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // 解析数据
-        final ArrayList<Point> list = new ArrayList<>();
-        String date = MyDate.date;
+        list = new ArrayList<>();
+        String date = MyDate.dateWangJing;
         JSONObject jsonObject = JSONObject.parseObject(date);
         JSONArray records = jsonObject.getJSONArray("tableAllowance");
         for (int i = 0; i < records.size(); i++) {
                 Point point = JSONObject.parseObject(records.get(i).toString(), Point.class);
                 point.tableStatusCopy = point.tableStatus;
-                point.fx = "1000";
-//                if (TextUtils.equals(point.tableNo,"12") ||TextUtils.equals(point.tableNo,"098") || TextUtils.equals(point.tableNo,"097")){
+//                if (TextUtils.equals(point.tableNo,"12") ||TextUtils.equals(point.tableNo,"69") || TextUtils.equals(point.tableNo,"5")){
 //                      list.add(point);
 //                }
             list.add(point);
         }
         //reserve_6_0_state1_1000
-        final SeatSelectView view = findViewById(R.id.view);
+        view = findViewById(R.id.view);
         view.setOnViewClickListener(new SeatSelectView.OnViewClickListener() {
             @Override
             public void onClick(String tableNo) {
@@ -47,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onGlobalLayout() {
                 view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                view.setData(list);
+                handler.sendEmptyMessageDelayed(1,500);
             }
         });
 
@@ -64,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 ArrayList list = new ArrayList();
-                list.add("靠窗");
+                list.add("老人");
                 view.filterData(list);
             }
         });

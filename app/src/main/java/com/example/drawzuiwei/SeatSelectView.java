@@ -8,7 +8,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -20,16 +19,15 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
 
 import com.example.drawzuiwei.bean.Point;
-//import com.haidilao.hailehui.model.Point;
-//import com.haidilao.hailehui.R;
-
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+//import com.haidilao.hailehui.model.Point;
+//import com.haidilao.hailehui.R;
 
 public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callback {
 
@@ -54,7 +52,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
     //画笔颜色
     private int mZhuoWeiWhiteColor = Color.parseColor("#ffffff");//白色;
     private int mZhuoWeiGrayColor = Color.parseColor("#A9A9A9");//灰色;
-    //图像
+    //缓存页面卓形图像
     private Map<String, Bitmap> bitmapMap;//存储图像的Bitmap
     private Bitmap checkBitmap;//选中的Bitmap
 
@@ -63,7 +61,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
     //桌位文字大小
     private int mZhuoWeiFontSize = 12;
 
-    private int touchState;
+    private int touchState;//触摸状态
     private int STATE_TWO_POINT = 100;//两个手指
     private int STATE_ONE_POINT = 200;//一个手指
 
@@ -79,28 +77,28 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
     private static final String TAG_XX = "xiangxian";
 
 
-    private ArrayList<Point> list;
-    private GestureDetector mGestureDetector;
+    private ArrayList<Point> list;//数据
+    private GestureDetector mGestureDetector;//手势监听
 
     private int beforeSelectIndex = -1;//上一时刻选中的下标
 
     //移动过程中的参数
-    private double beforeDistance = 0;
-    private double nowDistance = 0;
+    private double beforeDistance = 0;//上一时刻的距离
+    private double nowDistance = 0;//当前的距离
     private float downX;//起始点的X
     private float downY;//起始点的Y
     private int containerWidth;//容器的宽
     private int containerHeight;//容器的高
-    private float beforePointOneX;
-    private float beforePointOneY;
-    private float beforePointTwoX;
-    private float beforePointTwoY;
-    private float nowPointOneX;
-    private float nowPointOneY;
-    private float nowPointTwoX;
-    private float nowPointTwoY;
+    private float beforePointOneX;//上一时刻第一个手指的x坐标
+    private float beforePointOneY;//上一时刻第一个手指的y坐标
+    private float beforePointTwoX;//上一时刻第二个手指的x坐标
+    private float beforePointTwoY;//上一时刻第二个手指的y坐标
+    private float nowPointOneX;//当前时刻第一个手指的x坐标
+    private float nowPointOneY;//当前时刻第一个手指的y坐标
+    private float nowPointTwoX;//当前时刻第二个手指的x坐标
+    private float nowPointTwoY;//当前时刻第二个手指的y坐标
+
     private SurfaceHolder holder;//SurfaceView的持有者
-    private HandlerThread handlerThread;
 
 
     public SeatSelectView(Context context) {
@@ -128,11 +126,11 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
 
 
     public void drawImg(){
-        Canvas canvas = holder.lockCanvas();
-        canvas.drawColor(Color.WHITE);
-
-        Log.e(TAG,"绘制开始");
         if (list != null) {
+            Log.e(TAG,"绘制开始");
+            long start = System.currentTimeMillis();
+            Canvas canvas = holder.lockCanvas();
+            canvas.drawColor(Color.WHITE);
             for (int i = 0; i < this.list.size(); i++) {
                 Point item = list.get(i);
                 float x = item.x;
@@ -146,10 +144,14 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                 if (!TextUtils.equals(item.tableStatus,"0")&&!TextUtils.equals(item.tableStatus,"2")&&!TextUtils.equals(item.tableStatus,Point.MY_CHECK)){
                     item.tableStatus = "1";
                 }
+                // 屏幕以外不参与绘制
+                if (x + width < 0 || y + height < 0 || x > containerWidth || y > containerHeight){
+                    continue;
+                }
                 //3、如果是选择状态，绘制红色背景和白色的对勾
                 if (TextUtils.equals(item.tableStatus,Point.MY_CHECK)){
                     // 绘制红色背景
-                    String key = "reserve" + "_" + item.capacity + "_" + item.position + "_" + "state2"  + "_" + item.fx;
+                    String key = "reserve" + "_" + item.capacity + "_" + item.position + "_" + "state2"  + "_" + item.direction;
                     Bitmap bitmapTemp = bitmapMap.get(key);
                     Bitmap bitmap = big(bitmapTemp, width, height);
                     if (bitmap != null) {
@@ -162,7 +164,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                     canvas.drawBitmap(bitmapDuiGou,x + width / 2 - duigouWidth / 2,y + height / 2 - duigouHeight / 2 ,mZhuoWeiPaint);
                 } else {
                     //4、如果不是选择状态，根据状态设置不同的图片
-                    String key = "reserve" + "_" + item.capacity + "_" + item.position + "_" + "state" + item.tableStatus + "_" + item.fx;
+                    String key = "reserve" + "_" + item.capacity + "_" + item.position + "_" + "state" + item.tableStatus + "_" + item.direction;
                     Bitmap bitmapTemp = bitmapMap.get(key);
                     Bitmap bitmap = big(bitmapTemp, width, height);
                     if (bitmap != null) {
@@ -185,14 +187,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                     // 3、求得文字对应的宽高
                     float textHeight = measureTextHeight(mZhuoWeiNumPaint) * 2 / 3;
                     String tableNo = item.tableNo;// 桌号
-                    float textWidth = 0;// 桌号的宽度
-                    if ((tableNo + "").length() == 1) {
-                        textWidth = mZhuoWeiNumPaint.measureText("1");
-                    } else if ((tableNo + "").length() == 2) {
-                        textWidth = mZhuoWeiNumPaint.measureText("11");
-                    } else if ((tableNo + "").length() == 3) {
-                        textWidth = mZhuoWeiNumPaint.measureText("111");
-                    }
+                    float textWidth = mZhuoWeiNumPaint.measureText(tableNo);//桌号的宽度
                     // 4、计算中心点的位置
                     float centerX = x + width / 2;
                     float centerY = y + height / 2;
@@ -202,6 +197,8 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
             }
             Log.e(TAG,"绘制完成");
             holder.unlockCanvasAndPost(canvas);
+            long end = System.currentTimeMillis();
+            Log.e(TAG,"时间:" + (end - start));
         }
     }
 
@@ -229,8 +226,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
         // 初始化参数
         initParams();
         Log.e(TAG,"初始化参数完成");
-        // 绘制
-        //invalidate();
+        drawImg();
     }
 
     private void initParams() {
@@ -253,11 +249,21 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
         float screenWidth = changeX * rate;
         float screenHeight = changeY * rate;
 
+        // 对坐标进行调整，删除两边留白，同事增加一个边界
+        for (int i = 0; i < this.list.size(); i++) {
+            Point item = list.get(i);
+            item.ypoint = item.ypoint - minYPoint + (screenHeight - changeY) / 2;
+            item.xpoint = item.xpoint - minXPoint + (screenWidth - changeX) / 2;
+        }
+
+        // 宽高比
+        float rateHW = screenHeight / screenWidth;
+
         // 计算座位在页面上的位置（位置颠倒）
         for (int i = 0; i < this.list.size(); i++) {
             Point item = list.get(i);
-            item.x = (item.ypoint - minYPoint + (changeY * rate - changeY) / 2) / screenHeight * this.containerWidth;  // 在y轴占的比例 * 容器的宽度
-            item.y = (item.xpoint - minXPoint + (changeX * rate - changeX) / 2) / screenWidth * this.containerHeight;// 在x轴占的比例 * 容器的高度
+            item.x = containerWidth * (screenHeight - item.ypoint) / screenHeight;
+            item.y = containerWidth / screenHeight * item.xpoint;
         }
     }
 
@@ -321,7 +327,8 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                 }
             }
         }
-        invalidate();
+        //invalidate();
+        drawImg();
     }
 
     /**
@@ -353,9 +360,9 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         Log.e(TAG,"surfaceCreated");
-//        handlerThread = new HandlerThread(TAG);
-//        handlerThread.start();
-        drawImg();
+        Canvas canvas = holder.lockCanvas();
+        canvas.drawColor(Color.WHITE);
+        holder.unlockCanvasAndPost(canvas);
     }
 
 

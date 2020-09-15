@@ -26,5 +26,5 @@ public class Point {
     public String tableStatusCopy;//状态
     public String tableLableName;//标签：靠窗
     public String position;//位置 0=大厅，1=包间
-    public String fx;
+    public String direction;//方位
 }
