@@ -31,9 +31,12 @@ import java.util.Map;
 
 public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callback {
 
+    private static final String TAG = SeatSelectView.class.getSimpleName();
+    private static final String TAG_XX = "xiangxian";
+
     private static final int UPDATA = 100;
-    private static final float CHANGE_LENGTH = 3;
     private Context mContext;//上下文
+
     Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -46,7 +49,16 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
         }
     };
 
-    //画笔
+    //配置
+    private float originalWidthHeight = 60; // 图片原始宽高
+    private float PARAM_RATE = 2.5f; // 最终放大的图像是原始尺寸的几倍大小
+    private static final float CHANGE_LENGTH = 3;//每一次变化放大多少
+
+    //数据
+    private ArrayList<Point> list;
+
+    //桌位参数
+    //桌位相关画笔
     private Paint mZhuoWeiNumPaint;//桌位号的画笔
     private Paint mZhuoWeiPaint;//桌位画笔
     //画笔颜色
@@ -55,40 +67,30 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
     //缓存页面卓形图像
     private Map<String, Bitmap> bitmapMap;//存储图像的Bitmap
     private Bitmap checkBitmap;//选中的Bitmap
+    //桌位文字大小
+    private int mZhuoWeiFontSize = 12;
+    //桌位图片原始大和桌位图片大小
+    private float widthHeight = originalWidthHeight; // 图片宽高
 
     boolean clickState = false;// 点击状态 false:结束 true:正在进行中
 
-    //桌位文字大小
-    private int mZhuoWeiFontSize = 12;
-
+    //触摸状态
     private int touchState;//触摸状态
     private int STATE_TWO_POINT = 100;//两个手指
     private int STATE_ONE_POINT = 200;//一个手指
-
-    private float originalWidthHeight = 60; // 图片宽高
-    private float widthHeight = 60; // 图片宽高
-
-    float clickXTemp;//点击的X的位置
-    float clickYTemp;//点击的Y的位置
-
-    float PARAM_RATE = 2.5f; // 最终放大的图像是原始尺寸的几倍大小
-
-    private static final String TAG = SeatSelectView.class.getSimpleName();
-    private static final String TAG_XX = "xiangxian";
-
-
-    private ArrayList<Point> list;//数据
     private GestureDetector mGestureDetector;//手势监听
 
-    private int beforeSelectIndex = -1;//上一时刻选中的下标
-
-    //移动过程中的参数
-    private double beforeDistance = 0;//上一时刻的距离
-    private double nowDistance = 0;//当前的距离
-    private float downX;//起始点的X
-    private float downY;//起始点的Y
+    //容器参数
     private int containerWidth;//容器的宽
     private int containerHeight;//容器的高
+
+    //平移-缩放中的参数
+    //平移的参数
+    private float downX;//移动的手指按下的X
+    private float downY;//移动的手指按下的Y
+    //缩放的参数
+    private double beforeDistance = 0;//上一时刻的距离
+    private double nowDistance = 0;//当前的距离
     private float beforePointOneX;//上一时刻第一个手指的x坐标
     private float beforePointOneY;//上一时刻第一个手指的y坐标
     private float beforePointTwoX;//上一时刻第二个手指的x坐标
@@ -97,9 +99,12 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
     private float nowPointOneY;//当前时刻第一个手指的y坐标
     private float nowPointTwoX;//当前时刻第二个手指的x坐标
     private float nowPointTwoY;//当前时刻第二个手指的y坐标
+    //点击相关参数
+    private float clickXTemp;//点击的X的位置
+    private float clickYTemp;//点击的Y的位置
+    private int beforeSelectIndex = -1;//上一时刻选中的下标
 
     private SurfaceHolder holder;//SurfaceView的持有者
-
 
     public SeatSelectView(Context context) {
         super(context);
