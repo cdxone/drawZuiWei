@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.Toast;
@@ -35,13 +36,16 @@ public class MainActivity extends AppCompatActivity {
 
         // 解析数据
         list = new ArrayList<>();
-        String date = MyDate.dateWangJing;
+        String date = MyDate.dataTTY3;
         JSONObject jsonObject = JSONObject.parseObject(date);
         JSONArray records = jsonObject.getJSONArray("tableAllowance");
         for (int i = 0; i < records.size(); i++) {
                 Point point = JSONObject.parseObject(records.get(i).toString(), Point.class);
                 point.tableStatusCopy = point.tableStatus;
-//                if (TextUtils.equals(point.tableNo,"12") ||TextUtils.equals(point.tableNo,"69") || TextUtils.equals(point.tableNo,"5")){
+//                if (TextUtils.equals(point.tableNo,"8") ||TextUtils.equals(point.tableNo,"81")){
+//                      list.add(point);
+//                }
+//                if (TextUtils.equals(point.tableNo,"6") ||TextUtils.equals(point.tableNo,"81")){
 //                      list.add(point);
 //                }
             list.add(point);
@@ -50,8 +54,9 @@ public class MainActivity extends AppCompatActivity {
         view = findViewById(R.id.view);
         view.setOnViewClickListener(new SeatSelectView.OnViewClickListener() {
             @Override
-            public void onClick(String tableNo) {
-                Toast.makeText(MainActivity.this,tableNo,1).show();
+            public void onClick(String tableNo,String id) {
+//                Toast.makeText(MainActivity.this,tableNo,1).show();
+
             }
         });
 
