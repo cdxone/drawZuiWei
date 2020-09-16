@@ -65,7 +65,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
     private float WALL_OFFSET = 20;
 
     //数据
-    private ArrayList<Point> list;
+    private ArrayList<Point> list = new ArrayList<>();
 
     //桌位参数
     //桌位相关画笔
@@ -323,26 +323,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
             canvas.drawLine(x,y,x,y+widthHeight,mTestPaint);
             canvas.drawLine(x + widthHeight,y,x+widthHeight,y + widthHeight,mTestPaint);
             canvas.drawLine(x ,y + widthHeight,x+widthHeight,y + widthHeight,mTestPaint);
-
-//            if (i == (list.size() - 4)){
-//                canvas.drawLine(x+widthHeight,y,x+widthHeight,y+containerHeight,mTestPaint);
-//            }
-//
-//            if (i == (list.size() - 2)) {
-//                canvas.drawLine(x - widthHeight,y,x,y,mTestPaint);
-//                canvas.drawLine(x - widthHeight,y,x - widthHeight,y+widthHeight,mTestPaint);
-//                canvas.drawLine(x ,y,x,y + widthHeight,mTestPaint);
-//                canvas.drawLine(x -widthHeight ,y + widthHeight,x,y + widthHeight,mTestPaint);
-//                // 绘制竖直的线
-//                canvas.drawLine(x-widthHeight,y,x-widthHeight,y+containerHeight,mTestPaint);
-//            }
         }
-//        canvas.drawLine(1080-10,0,1080-10,containerHeight,mTestPaint2);
-//        canvas.drawLine(860,0,862f,containerHeight,mTestPaint);
-
-
-//        canvas.drawLine(CHANGE_MIN_LENGTH / 2,0,CHANGE_MIN_LENGTH / 2,containerHeight,mTestPaint);
-//        canvas.drawLine(containerWidth - CHANGE_MIN_LENGTH / 2, 0,containerWidth - CHANGE_MIN_LENGTH / 2,containerHeight,mTestPaint);
     }
 
     public void drawSpc(Canvas canvas,Point item,String tableNo,float width,float height){
@@ -585,22 +566,26 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        Log.e(TAG,"surfaceCreated");
+        Log.e("surfaceCreated","surfaceCreated" + list.size());
         Canvas canvas = holder.lockCanvas();
         canvas.drawColor(Color.parseColor("#f7f5f5"));
         holder.unlockCanvasAndPost(canvas);
+        //锁屏会导致执行surfaceViewDestroy方法，所以页面清空
+        //解锁会执行surfaceViewCreated方法
+        if (list.size() > 0){
+            drawImg();
+        }
     }
 
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
+        Log.e("surfaceCreated","surfaceChanged");
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-//        handlerThread.quit();
-//        handlerThread = null;
+        Log.e("surfaceCreated","surfaceDestroyed");
     }
 
     class MaxMin{
