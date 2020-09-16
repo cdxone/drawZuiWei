@@ -381,30 +381,6 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
     }
 
     private void initParams() {
-
-//        for (int i = 0; i < list.size(); i++) {
-//            Point item = list.get(i);
-//            if (TextUtils.equals(item.tableNo,"81")){
-//                // 左部增加墙
-//                pointWallLeft.xpoint = item.xpoint - widthHeight / 2;
-//                pointWallLeft.ypoint = item.ypoint - widthHeight / 2 ;
-//                // 上部增加墙
-//                pointWallTop.xpoint = item.xpoint - widthHeight / 2;
-//                pointWallTop.ypoint = item.ypoint - widthHeight / 2;
-//                pointWallTop.tableSpecType = Point.TOP_WALL;
-//                // 右部增加墙
-//                pointWallRight.ypoint = item.ypoint - widthHeight /2;
-//                // 底部增加墙
-//                pointWallBottom.xpoint = item.xpoint - widthHeight / 2;
-//            }
-//            if (TextUtils.equals(item.tableNo,"8")){
-//                // 左部增加墙
-//                pointWallRight.xpoint = item.xpoint +  widthHeight;
-//                // 底部增加墙
-//                pointWallBottom.ypoint = item.ypoint + widthHeight;
-//            }
-//        }
-
         // 获得容器的宽高
         containerWidth = getWidth();
         containerHeight = getHeight();
@@ -415,34 +391,6 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
         float minXPoint = maxMinPoint.minXValue;
         float maxYPoint = maxMinPoint.maxYValue;
         float minYPoint = maxMinPoint.minYValue;
-
-//        // 由于要增加边界墙,所以将边界的范围设置为最小的边界小一个范围
-//        float minXPointTemp = minXPoint - X_CHANGE;
-//        float maxXPointTemp = maxXPoint  + X_CHANGE;
-//        float minYPointTemp = minYPoint - Y_CHANGE;
-//        float maxYPointTemp = maxYPoint  + Y_CHANGE;
-
-//        // 增加墙，小料台等
-//        Point pointWallLeft = new Point(Point.LEFT_WALL);
-//        Point pointWallTop = new Point(Point.TOP_WALL);
-//        Point pointWallRight = new Point(Point.RIGHT_WALL);
-//        Point pointWallBottom = new Point(Point.BOTTOM_WALL);
-//        pointWallLeft.xpoint = minXPointTemp;
-//        pointWallLeft.ypoint = minYPointTemp;
-//
-//        pointWallTop.xpoint = minXPointTemp;
-//        pointWallTop.ypoint = minYPointTemp;
-//
-//        pointWallRight.xpoint = maxXPointTemp;
-//        pointWallRight.ypoint = minYPointTemp;
-//
-//        pointWallBottom.xpoint = minXPointTemp;
-//        pointWallBottom.ypoint = maxYPointTemp;
-//
-//        list.add(pointWallLeft);
-//        list.add(pointWallTop);
-//        list.add(pointWallRight);
-//        list.add(pointWallBottom);
 
         // 求得他们变化的范围
         float changeX = maxXPoint - minXPoint;
