@@ -56,12 +56,13 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
     private float originalWidthHeight = 90; // 图片原始宽高
     private float PARAM_RATE = 2.5f; // 最终放大的图像是原始尺寸的几倍大小
     private static final float CHANGE_LENGTH = 3;//每一次变化放大多少
-    private static final float BIG_RATE = 1.1f;
-    private float lRWallWidthRate = 0.3f;
-    private float lRWallHeightRate = 21f;
-    private float tbWallWidthRate = 15f;
-    private float tbWallHeightRate = 0.3f;
-    float CHANGE_MIN_LENGTH = 160;
+    private static final float BIG_RATE = 1.1f;//放大的比例
+    private float lRWallWidthRate = 0.3f;//左右墙的宽度比例
+    private float lRWallHeightRate = 20.5f;//左右墙的长度比例
+    private float tbWallWidthRate = 14.5f;//上下墙的宽度比例
+    private float tbWallHeightRate = 0.3f;//上下墙的长度比例
+    private float CHANGE_MIN_LENGTH = 160;//
+    private float WALL_OFFSET = 20;
 
     //数据
     private ArrayList<Point> list;
@@ -409,12 +410,6 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
             item.ypoint = item.ypoint - minYPoint + (screenHeight - changeY) / 2;
         }
 
-        Log.e("数据","=============================");
-        for (int i = 0; i < list.size(); i++) {
-            Point item = list.get(i);
-            Log.e("数据改变以后：",item.xpoint + "---" + item.ypoint);
-        }
-
         // 宽度 > 高度,那么旋转展示
         if (screenWidth > screenHeight + 100){
             // 计算座位在页面上的位置（位置颠倒）
@@ -424,20 +419,20 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                 item.y = containerWidth / screenHeight * item.xpoint;
             }
         } else {
-            // 宽度 < 高度，那么不再旋转
+            // 宽度 < 高度，说明是竖直方向，那么不再旋转
             for (int i = 0; i < this.list.size(); i++) {
                 Point item = list.get(i);
+                // containerWidth / screenWidth：是缩放比例，是电脑屏幕向手机屏幕的缩放比例
+                // containerWidth / (containerWidth + widthHeight):由于按照坐标绘制，发现按照x的最大值绘制的图片会超出屏幕，所以进行缩放
                 item.x = containerWidth / screenWidth * item.xpoint * containerWidth / (containerWidth + widthHeight);
                 item.y = containerWidth / screenWidth * item.ypoint * containerWidth / (containerWidth + widthHeight);
-//                item.x = containerWidth / screenWidth * item.xpoint;
-//                item.y = containerWidth / screenWidth * item.ypoint;
             }
         }
 
+        // 页面缩放了，那么对应的图片的宽高也应该进行缩放
         widthHeight = widthHeight * containerWidth / (containerWidth + widthHeight);
 
-        // 定义x周缩小的比例为80
-        CHANGE_MIN_LENGTH = 2 * widthHeight;
+        // 为了显示四周的墙，必须要对桌位进行缩放
         float suoXiaoRate = (containerWidth - CHANGE_MIN_LENGTH) * 1.0f / containerWidth;
         for (int i = 0; i < list.size(); i++) {
             Point item = list.get(i);
@@ -445,27 +440,22 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
             item.y = item.y * suoXiaoRate + CHANGE_MIN_LENGTH / 2;
         }
 
+        // 页面缩放了，对应的桌子大小也得跟着缩放
         widthHeight = widthHeight *  (containerWidth - CHANGE_MIN_LENGTH) * 1.0f / containerWidth;
 
-        // 获得
-        MaxMin maxMin = getMaxMin();
-        float maxX = maxMin.maxXValue;
-        float minX = maxMin.minXValue;
-        float maxY = maxMin.maxYValue;
-        float minY = maxMin.minYValue;
         //添加4个墙
         Point leftWall = new Point(Point.LEFT_WALL);
-        leftWall.x = 0;
-        leftWall.y = 0;
+        leftWall.x = WALL_OFFSET;
+        leftWall.y = WALL_OFFSET;
         Point topWall = new Point(Point.TOP_WALL);
-        leftWall.x = 0;
-        leftWall.y = 0;
+        topWall.x = WALL_OFFSET;
+        topWall.y = WALL_OFFSET;
         Point rightWall = new Point(Point.RIGHT_WALL);
-        rightWall.x = containerWidth;
-        rightWall.y = 0;
+        rightWall.x = containerWidth - WALL_OFFSET;
+        rightWall.y = WALL_OFFSET;
         Point bottomWall = new Point(Point.BOTTOM_WALL);
-        bottomWall.x = 0;
-        bottomWall.y = containerHeight;
+        bottomWall.x = WALL_OFFSET;
+        bottomWall.y = containerHeight-WALL_OFFSET;
 
         list.add(leftWall);
         list.add(topWall);
