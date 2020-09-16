@@ -442,6 +442,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
 
         // 页面缩放了，对应的桌子大小也得跟着缩放
         widthHeight = widthHeight *  (containerWidth - CHANGE_MIN_LENGTH) * 1.0f / containerWidth;
+        originalWidthHeight = widthHeight;
 
         //添加4个墙
         Point leftWall = new Point(Point.LEFT_WALL);
