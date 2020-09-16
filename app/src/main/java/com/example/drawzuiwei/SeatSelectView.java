@@ -56,7 +56,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
     private float originalWidthHeight = 90; // 图片原始宽高
     private float PARAM_RATE = 2.5f; // 最终放大的图像是原始尺寸的几倍大小
     private static final float CHANGE_LENGTH = 3;//每一次变化放大多少
-    private static final float BIG_RATE = 1f;
+    private static final float BIG_RATE = 1.1f;
     private float lRWallWidthRate = 0.3f;
     private float lRWallHeightRate = 21f;
     private float tbWallWidthRate = 15f;
@@ -395,19 +395,12 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
         // 求得他们变化的范围
         float changeX = maxXPoint - minXPoint;
         float changeY = maxYPoint - minYPoint;
-//        float changeX = maxXPoint - minXPoint;
-//        float changeY = maxYPoint - minXPoint;
 
-        // 将他们变化的范围放大1.2倍
+        // 将他们变化的范围放大1.1倍
         float rate = BIG_RATE;
-        float screenWidth = changeX * rate;
+        //float screenWidth = changeX * rate;
+        float screenWidth = changeX;
         float screenHeight = changeY * rate;
-
-        Log.e("数据","屏幕的宽高:" + screenWidth + "----" + screenHeight);
-        for (int i = 0; i < list.size(); i++) {
-            Point item = list.get(i);
-            Log.e("数据",item.xpoint + "---" + item.ypoint);
-        }
 
         // 对坐标进行调整，删除两边留白，同事增加一个边界,让坐标居中
         for (int i = 0; i < this.list.size(); i++) {
