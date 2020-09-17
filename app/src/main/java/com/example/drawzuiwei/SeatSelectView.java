@@ -275,15 +275,20 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                 else {
                     float x = item.x;
                     float y = item.y;
+                    Point pointLT = list.get(list.size() - 4);//左上角的点
+                    Point pointRT = list.get(list.size() -2);//右上角的点
+                    Point pointLB = list.get(list.size() - 1);//左下角的点
+                    float henLength =   pointRT.x - pointLT.x;//水平方向的变化
+                    float shuLength =  pointLB.y - pointLT.y;//竖直方向的变化
                     if (TextUtils.equals(item.tableSpecType,Point.LEFT_WALL)){
                         float width = this.widthHeight * lRWallWidthRate;
-                        float height = this.widthHeight * lRWallHeightRate;
+                        float height = shuLength;
                         if (x + width > 0 && x < containerWidth && y + height > 0 && y < containerHeight) {
                             Bitmap bitmap = big(wallShuBitmap, width , height);
                             canvas.drawBitmap(bitmap, x, y,mZhuoWeiPaint);
                         }
                     } else if (TextUtils.equals(item.tableSpecType,Point.TOP_WALL)) {
-                        float width = this.widthHeight * tbWallWidthRate;
+                        float width = henLength;
                         float height = this.widthHeight * tbWallHeightRate;
                         if (x + width > 0 && x < containerWidth && y + height > 0 && y < containerHeight) {
                             Bitmap bitmap = big(wallHenBitmap,width,height);
@@ -291,7 +296,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                         }
                     }  else if (TextUtils.equals(item.tableSpecType,Point.RIGHT_WALL)) {
                         float width = this.widthHeight * lRWallWidthRate;
-                        float height = this.widthHeight * lRWallHeightRate;
+                        float height = shuLength;
                         if (x + width > 0 && x < containerWidth && y + height > 0 && y < containerHeight) {
                             Bitmap bitmap = big(wallShuBitmap,width,height);
                             // 注意对x值进行了修订
@@ -299,7 +304,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                         }
                         entryX = x - widthHeight * 2.5f -width;
                     } else if (TextUtils.equals(item.tableSpecType,Point.BOTTOM_WALL)) {
-                        float width = this.widthHeight * tbWallWidthRate;
+                        float width = henLength;
                         float height = this.widthHeight * tbWallHeightRate;
                         if (x + width > 0 && x < containerWidth && y + height > 0 && y < containerHeight) {
                             Bitmap bitmap = big(wallHenBitmap,width,height);
