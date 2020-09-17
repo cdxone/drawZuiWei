@@ -158,8 +158,6 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
             Canvas canvas = holder.lockCanvas();
             canvas.drawColor(Color.WHITE);
 
-            float xRu = NOT_DEFINT;
-            float yRu = NOT_DEFINT;
             // 绘制桌位
             float entryX = 0;
             float entryY = 0;
@@ -179,6 +177,41 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                 if (TextUtils.isEmpty(item.tableSpecType)){
                     float x = item.x;
                     float y = item.y;
+
+                    // 保存男女厕所，小料台，入口位置
+                    //绘制男厕所
+                    if (TextUtils.equals(item.tableNo,"55")){
+                        wcNanX = item.x;
+                        wcNanY = item.y + this.widthHeight;
+
+                        wcNvY = wcNanY;
+                    }
+
+                    //绘制女厕所
+                    if (TextUtils.equals(item.tableNo,"22")){
+                        wcNvX = item.x;
+                    }
+
+                    //绘制小料台
+                    if (TextUtils.equals(item.tableNo,"31")){
+                        xlt1X = item.x + widthHeight / 5;
+                        xlt1Y = item.y + widthHeight;
+                    }
+
+                    //绘制小料台
+                    if (TextUtils.equals(item.tableNo,"66")){
+                        xlt2X = item.x - widthHeight * 0.7f - 5;
+                        xlt2Y = item.y + widthHeight * 0.2f;
+                    }
+
+                    if (TextUtils.equals(item.tableNo,"29")){
+                        xlt3X = item.x + widthHeight;
+                        xlt3Y = item.y - widthHeight * 0.8f;
+                    }
+
+                    if (TextUtils.equals(item.tableNo,"65")){
+                        entryY = item.y;
+                    }
 
                     //绘制对应的桌位
                     //1、设置绘制的宽高
@@ -231,9 +264,6 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                         // 3、求得文字对应的宽高
                         float textHeight = measureTextHeight(mZhuoWeiNumPaint) * 2 / 3;
                         String tableNo = item.tableNo;// 桌号
-                        if (TextUtils.isEmpty(tableNo)){
-                            Log.e("cdxcdx","" + item.tableSpecType);
-                        }
                         float textWidth = mZhuoWeiNumPaint.measureText(tableNo);//桌号的宽度
                         // 4、计算中心点的位置
                         float centerX = x + width / 2;
@@ -241,56 +271,6 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                         // 5、绘制桌位文字
                         canvas.drawText(tableNo, centerX - textWidth / 2, centerY + textHeight / 2, mZhuoWeiNumPaint);
                     }
-
-                    //绘制男厕所
-                    if (TextUtils.equals(item.tableNo,"55")){
-                        wcNanX = item.x;
-                        wcNanY = item.y + this.widthHeight;
-
-                        wcNvY = wcNanY;
-                    }
-
-                    //绘制女厕所
-                    if (TextUtils.equals(item.tableNo,"22")){
-                        wcNvX = item.x;
-                    }
-
-                    //绘制小料台
-                    if (TextUtils.equals(item.tableNo,"31")){
-                        xlt1X = item.x + widthHeight / 5;
-                        xlt1Y = item.y + widthHeight;
-//                        float xTemp = item.x;
-//                        float yTemp = item.y;
-//                        Bitmap bitmap = big(xltHenBitmap, width * 1.5f, height);
-//                        canvas.drawBitmap(bitmap,xTemp + widthHeight / 5,yTemp + this.widthHeight,mZhuoWeiPaint);
-                    }
-
-                    //绘制小料台
-                    if (TextUtils.equals(item.tableNo,"66")){
-                        xlt2X = item.x - widthHeight * 0.7f - 5;
-                        xlt2Y = item.y + widthHeight * 0.2f;
-//                        float xTemp = item.x;
-//                        float yTemp = item.y;
-//                        Bitmap bitmap = big(xltShuBitmap, width, height * 1.5f);
-//                        canvas.drawBitmap(bitmap,xTemp - widthHeight - 5, yTemp + widthHeight / 5 ,mZhuoWeiPaint);
-                    }
-
-                    if (TextUtils.equals(item.tableNo,"29")){
-                        xlt3X = item.x + widthHeight;
-                        xlt3Y = item.y - widthHeight * 0.8f;
-                    }
-
-                    if (TextUtils.equals(item.tableNo,"65")){
-                        entryY = item.y;
-                    }
-//                    if (TextUtils.equals(item.tableNo,"1")){
-//                        xRu = item.x;
-//                    }
-//
-//                    if (xRu != NOT_DEFINT && yRu != NOT_DEFINT){
-//                        Bitmap bitmap = big(entryBitmap, width * 2, height);
-//                        canvas.drawBitmap(bitmap, xRu - width, yRu,mZhuoWeiPaint);
-//                    }
                 }
                 else {
                     float x = item.x;
@@ -332,24 +312,35 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
 
             // 绘制男厕、女厕、小料台、入口
             // 入口
-            Bitmap entryBitmapTemp = big(entryBitmap,widthHeight * 2.5f,widthHeight * 1.5f);
-            canvas.drawBitmap(entryBitmapTemp,entryX,entryY,mZhuoWeiPaint);
+            if (entryX > 0 && entryY > 0){
+                Bitmap entryBitmapTemp = big(entryBitmap,widthHeight * 2.5f,widthHeight * 1.5f);
+                canvas.drawBitmap(entryBitmapTemp,entryX,entryY,mZhuoWeiPaint);
+            }
             // 男厕
-            Bitmap wcNamBitmapTemp = big(wcNamBitmap,widthHeight * 1.5f,widthHeight * 1.5f);
-            canvas.drawBitmap(wcNamBitmapTemp,wcNanX,wcNanY,mZhuoWeiPaint);
+            if (wcNanX > 0 && wcNanY > 0){
+                Bitmap wcNamBitmapTemp = big(wcNamBitmap,widthHeight * 1.5f,widthHeight * 1.5f);
+                canvas.drawBitmap(wcNamBitmapTemp,wcNanX,wcNanY,mZhuoWeiPaint);
+            }
             // 女厕
-            Bitmap wcNvBitmapTemp = big(wcNvBitmap,widthHeight * 1.5f,widthHeight * 1.5f);
-            canvas.drawBitmap(wcNvBitmapTemp,wcNvX,wcNvY,mZhuoWeiPaint);
+            if (wcNvX > 0 && wcNvY > 0){
+                Bitmap wcNvBitmapTemp = big(wcNvBitmap,widthHeight * 1.5f,widthHeight * 1.5f);
+                canvas.drawBitmap(wcNvBitmapTemp,wcNvX,wcNvY,mZhuoWeiPaint);
+            }
             // 小料台1
-            Bitmap xltHenBitmapTemp = big(xltHenBitmap,widthHeight * 1.5f,widthHeight * 0.7f);
-            canvas.drawBitmap(xltHenBitmapTemp,xlt1X,xlt1Y,mZhuoWeiPaint);
+            if (xlt1X > 0 && xlt1Y > 0){
+                Bitmap xltHenBitmapTemp = big(xltHenBitmap,widthHeight * 1.5f,widthHeight * 0.7f);
+                canvas.drawBitmap(xltHenBitmapTemp,xlt1X,xlt1Y,mZhuoWeiPaint);
+            }
             // 小料台2
-            Bitmap xltShuBitmapTemp = big(xltShuBitmap,widthHeight * 0.7f,widthHeight * 1.5f);
-            canvas.drawBitmap(xltShuBitmapTemp,xlt2X,xlt2Y,mZhuoWeiPaint);
+            if (xlt2X > 0 && xlt2Y > 0){
+                Bitmap xltShuBitmapTemp = big(xltShuBitmap,widthHeight * 0.7f,widthHeight * 1.5f);
+                canvas.drawBitmap(xltShuBitmapTemp,xlt2X,xlt2Y,mZhuoWeiPaint);
+            }
             // 小料台3
-            Bitmap xltHenBitmapTemp2 = big(xltHenBitmap,widthHeight * 1.2f,widthHeight * 0.7f);
-            canvas.drawBitmap(xltHenBitmapTemp2,xlt3X,xlt3Y,mZhuoWeiPaint);
-
+            if (xlt3X > 0 && xlt3Y > 0){
+                Bitmap xltHenBitmapTemp2 = big(xltHenBitmap,widthHeight * 1.2f,widthHeight * 0.7f);
+                canvas.drawBitmap(xltHenBitmapTemp2,xlt3X,xlt3Y,mZhuoWeiPaint);
+            }
             //drawTest(canvas);
 
             holder.unlockCanvasAndPost(canvas);
