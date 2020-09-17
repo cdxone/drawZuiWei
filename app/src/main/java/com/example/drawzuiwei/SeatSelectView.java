@@ -417,6 +417,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
         // 获得容器的宽高
         containerWidth = getWidth();
         containerHeight = getHeight();
+        widthHeight = containerWidth / 9;
         
         // 获取原始数据xpoint和ypoint的最大值和最小值
         MaxMin maxMinPoint = getMaxMinPoint();
