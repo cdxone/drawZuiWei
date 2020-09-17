@@ -228,7 +228,9 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                     //3、如果是选择状态，绘制红色背景和白色的对勾
                     // 6人桌需要增加额外的配置,向左开，向右开
                     String extra = "";
-                    if (item.remark != null && !TextUtils.isEmpty(item.remark.trim())){
+                    if (item.remark != null
+                            && !TextUtils.isEmpty(item.remark.trim())
+                            && (TextUtils.equals("r",item.remark) || TextUtils.equals("l",item.remark))){
                         extra = "_" + item.remark;
                     }
                     if (TextUtils.equals(item.tableStatus,Point.MY_CHECK)){
@@ -680,6 +682,13 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                     for (int l = 0; l < positionState.length; l++) {
                         String key = name[j] + "_" + i + "_" + checkState[k] + "_" + positionState[l];
                         bitmapMap.put(key, BitmapFactory.decodeResource(getResources(), getDrawableResId(key)));
+                        // 6人桌需要额外加载向左开口和向右开口的桌子
+                        if (TextUtils.equals(name[j],"reserve_6")){
+                            String keyLeft = name[j] + "_" + i + "_" + checkState[k] + "_" + positionState[l] + "_l";
+                            bitmapMap.put(keyLeft, BitmapFactory.decodeResource(getResources(), getDrawableResId(keyLeft)));
+                            String keyRight = name[j] + "_" + i + "_" + checkState[k] + "_" + positionState[l] + "_r";
+                            bitmapMap.put(keyRight, BitmapFactory.decodeResource(getResources(), getDrawableResId(keyRight)));
+                        }
                     }
                 }
             }
