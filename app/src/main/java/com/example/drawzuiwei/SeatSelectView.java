@@ -281,23 +281,33 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                     if (TextUtils.equals(item.tableSpecType,Point.LEFT_WALL)){
                         float width = this.widthHeight * lRWallWidthRate;
                         float height = this.widthHeight * lRWallHeightRate;
-                        Bitmap bitmap = big(wallShuBitmap, width , height);
-                        canvas.drawBitmap(bitmap, x, y,mZhuoWeiPaint);
+                        if (x + width > 0 && x < containerWidth && y + height > 0 && y < containerHeight) {
+                            Bitmap bitmap = big(wallShuBitmap, width , height);
+                            canvas.drawBitmap(bitmap, x, y,mZhuoWeiPaint);
+                        }
                     } else if (TextUtils.equals(item.tableSpecType,Point.TOP_WALL)) {
                         float width = this.widthHeight * tbWallWidthRate;
                         float height = this.widthHeight * tbWallHeightRate;
-                        Bitmap bitmap = big(wallHenBitmap,width,height);
-                        canvas.drawBitmap(bitmap, x, y,mZhuoWeiPaint);
+                        if (x + width > 0 && x < containerWidth && y + height > 0 && y < containerHeight) {
+                            Bitmap bitmap = big(wallHenBitmap,width,height);
+                            canvas.drawBitmap(bitmap, x, y,mZhuoWeiPaint);
+                        }
                     }  else if (TextUtils.equals(item.tableSpecType,Point.RIGHT_WALL)) {
                         float width = this.widthHeight * lRWallWidthRate;
                         float height = this.widthHeight * lRWallHeightRate;
-                        Bitmap bitmap = big(wallShuBitmap,width,height);
-                        canvas.drawBitmap(bitmap, x - width, y,mZhuoWeiPaint);
+                        if (x + width > 0 && x < containerWidth && y + height > 0 && y < containerHeight) {
+                            Bitmap bitmap = big(wallShuBitmap,width,height);
+                            // 注意对x值进行了修订
+                            canvas.drawBitmap(bitmap, x - width, y,mZhuoWeiPaint);
+                        }
                     } else if (TextUtils.equals(item.tableSpecType,Point.BOTTOM_WALL)) {
                         float width = this.widthHeight * tbWallWidthRate;
                         float height = this.widthHeight * tbWallHeightRate;
-                        Bitmap bitmap = big(wallHenBitmap,width,height);
-                        canvas.drawBitmap(bitmap, x, y - height,mZhuoWeiPaint);
+                        if (x + width > 0 && x < containerWidth && y + height > 0 && y < containerHeight) {
+                            Bitmap bitmap = big(wallHenBitmap,width,height);
+                            // 注意对y值进行了修订
+                            canvas.drawBitmap(bitmap, x, y - height,mZhuoWeiPaint);
+                        }
                     }
                 }
             }
