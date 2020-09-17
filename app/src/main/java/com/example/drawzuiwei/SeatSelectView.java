@@ -161,7 +161,18 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
             float xRu = NOT_DEFINT;
             float yRu = NOT_DEFINT;
             // 绘制桌位
-            Log.e("坐标","容器宽高：" + this.containerWidth + "---" + containerHeight);
+            float entryX = 0;
+            float entryY = 0;
+            float wcNanX = 0;
+            float wcNanY = 0;
+            float wcNvX = 0;
+            float wcNvY = 0;
+            float xlt1X = 0;
+            float xlt1Y = 0;
+            float xlt2X = 0;
+            float xlt2Y = 0;
+            float xlt3X = 0;
+            float xlt3Y = 0;
             for (int i = 0; i < this.list.size(); i++) {
                 Point item = list.get(i);
                 Log.e("坐标",item.x + "--" + item.y);
@@ -233,47 +244,53 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
 
                     //绘制男厕所
                     if (TextUtils.equals(item.tableNo,"55")){
-                        float xTemp = item.x;
-                        float yTemp = item.y;
-                        Bitmap bitmap = big(wcNamBitmap, width, height);
-                        canvas.drawBitmap(bitmap,xTemp,yTemp + this.widthHeight,mZhuoWeiPaint);
+                        wcNanX = item.x;
+                        wcNanY = item.y + this.widthHeight;
+
+                        wcNvY = wcNanY;
                     }
 
                     //绘制女厕所
                     if (TextUtils.equals(item.tableNo,"22")){
-                        float xTemp = item.x;
-                        float yTemp = item.y;
-                        Bitmap bitmap = big(wcNvBitmap, width, height);
-                        canvas.drawBitmap(bitmap,xTemp,yTemp + this.widthHeight * 3,mZhuoWeiPaint);
+                        wcNvX = item.x;
                     }
 
                     //绘制小料台
                     if (TextUtils.equals(item.tableNo,"31")){
-                        float xTemp = item.x;
-                        float yTemp = item.y;
-                        Bitmap bitmap = big(xltHenBitmap, width * 1.5f, height);
-                        canvas.drawBitmap(bitmap,xTemp + widthHeight / 5,yTemp + this.widthHeight,mZhuoWeiPaint);
+                        xlt1X = item.x + widthHeight / 5;
+                        xlt1Y = item.y + widthHeight;
+//                        float xTemp = item.x;
+//                        float yTemp = item.y;
+//                        Bitmap bitmap = big(xltHenBitmap, width * 1.5f, height);
+//                        canvas.drawBitmap(bitmap,xTemp + widthHeight / 5,yTemp + this.widthHeight,mZhuoWeiPaint);
                     }
 
                     //绘制小料台
                     if (TextUtils.equals(item.tableNo,"66")){
-                        float xTemp = item.x;
-                        float yTemp = item.y;
-                        Bitmap bitmap = big(xltShuBitmap, width, height * 1.5f);
-                        canvas.drawBitmap(bitmap,xTemp - widthHeight - 5, yTemp + widthHeight / 5 ,mZhuoWeiPaint);
+                        xlt2X = item.x - widthHeight * 0.7f - 5;
+                        xlt2Y = item.y + widthHeight * 0.2f;
+//                        float xTemp = item.x;
+//                        float yTemp = item.y;
+//                        Bitmap bitmap = big(xltShuBitmap, width, height * 1.5f);
+//                        canvas.drawBitmap(bitmap,xTemp - widthHeight - 5, yTemp + widthHeight / 5 ,mZhuoWeiPaint);
+                    }
+
+                    if (TextUtils.equals(item.tableNo,"29")){
+                        xlt3X = item.x + widthHeight;
+                        xlt3Y = item.y - widthHeight * 0.8f;
                     }
 
                     if (TextUtils.equals(item.tableNo,"65")){
-                        yRu = item.y;
+                        entryY = item.y;
                     }
-                    if (TextUtils.equals(item.tableNo,"1")){
-                        xRu = item.x;
-                    }
-
-                    if (xRu != NOT_DEFINT && yRu != NOT_DEFINT){
-                        Bitmap bitmap = big(entryBitmap, width * 2, height);
-                        canvas.drawBitmap(bitmap, xRu - width, yRu,mZhuoWeiPaint);
-                    }
+//                    if (TextUtils.equals(item.tableNo,"1")){
+//                        xRu = item.x;
+//                    }
+//
+//                    if (xRu != NOT_DEFINT && yRu != NOT_DEFINT){
+//                        Bitmap bitmap = big(entryBitmap, width * 2, height);
+//                        canvas.drawBitmap(bitmap, xRu - width, yRu,mZhuoWeiPaint);
+//                    }
                 }
                 else {
                     float x = item.x;
@@ -300,6 +317,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                             // 注意对x值进行了修订
                             canvas.drawBitmap(bitmap, x - width, y,mZhuoWeiPaint);
                         }
+                        entryX = x - widthHeight * 2.5f -width;
                     } else if (TextUtils.equals(item.tableSpecType,Point.BOTTOM_WALL)) {
                         float width = this.widthHeight * tbWallWidthRate;
                         float height = this.widthHeight * tbWallHeightRate;
@@ -311,6 +329,26 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                     }
                 }
             }
+
+            // 绘制男厕、女厕、小料台、入口
+            // 入口
+            Bitmap entryBitmapTemp = big(entryBitmap,widthHeight * 2.5f,widthHeight * 1.5f);
+            canvas.drawBitmap(entryBitmapTemp,entryX,entryY,mZhuoWeiPaint);
+            // 男厕
+            Bitmap wcNamBitmapTemp = big(wcNamBitmap,widthHeight * 1.5f,widthHeight * 1.5f);
+            canvas.drawBitmap(wcNamBitmapTemp,wcNanX,wcNanY,mZhuoWeiPaint);
+            // 女厕
+            Bitmap wcNvBitmapTemp = big(wcNvBitmap,widthHeight * 1.5f,widthHeight * 1.5f);
+            canvas.drawBitmap(wcNvBitmapTemp,wcNvX,wcNvY,mZhuoWeiPaint);
+            // 小料台1
+            Bitmap xltHenBitmapTemp = big(xltHenBitmap,widthHeight * 1.5f,widthHeight * 0.7f);
+            canvas.drawBitmap(xltHenBitmapTemp,xlt1X,xlt1Y,mZhuoWeiPaint);
+            // 小料台2
+            Bitmap xltShuBitmapTemp = big(xltShuBitmap,widthHeight * 0.7f,widthHeight * 1.5f);
+            canvas.drawBitmap(xltShuBitmapTemp,xlt2X,xlt2Y,mZhuoWeiPaint);
+            // 小料台3
+            Bitmap xltHenBitmapTemp2 = big(xltHenBitmap,widthHeight * 1.2f,widthHeight * 0.7f);
+            canvas.drawBitmap(xltHenBitmapTemp2,xlt3X,xlt3Y,mZhuoWeiPaint);
 
             //drawTest(canvas);
 
