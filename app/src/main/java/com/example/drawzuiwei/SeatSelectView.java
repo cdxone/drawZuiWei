@@ -226,9 +226,14 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                         continue;
                     }
                     //3、如果是选择状态，绘制红色背景和白色的对勾
+                    // 6人桌需要增加额外的配置,向左开，向右开
+                    String extra = "";
+                    if (item.remark != null && !TextUtils.isEmpty(item.remark.trim())){
+                        extra = "_" + item.remark;
+                    }
                     if (TextUtils.equals(item.tableStatus,Point.MY_CHECK)){
                         // 绘制红色背景
-                        String key = "reserve" + "_" + item.capacity + "_" + item.position + "_" + "state2"  + "_" + item.direction;
+                        String key = "reserve" + "_" + item.capacity + "_" + item.position + "_" + "state2"  + "_" + item.direction + extra;
                         Bitmap bitmapTemp = bitmapMap.get(key);
                         Bitmap bitmap = big(bitmapTemp, width, height);
                         if (bitmap != null) {
@@ -241,7 +246,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                         canvas.drawBitmap(bitmapDuiGou,x + width / 2 - duigouWidth / 2,y + height / 2 - duigouHeight / 2 ,mZhuoWeiPaint);
                     } else {
                         //4、如果不是选择状态，根据状态设置不同的图片
-                        String key = "reserve" + "_" + item.capacity + "_" + item.position + "_" + "state" + item.tableStatus + "_" + item.direction;
+                        String key = "reserve" + "_" + item.capacity + "_" + item.position + "_" + "state" + item.tableStatus + "_" + item.direction + extra;
                         Bitmap bitmapTemp = bitmapMap.get(key);
                         Bitmap bitmap = big(bitmapTemp, width, height);
                         if (bitmap != null) {

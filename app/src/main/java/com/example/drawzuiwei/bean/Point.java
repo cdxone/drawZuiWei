@@ -19,7 +19,7 @@ public class Point {
     public float y;//页面中的y位置
     public int capacity;//座位容量
     public String tableNo;//桌号
-    public String id;//id
+    public String id;//id,
     /**
      * 我们只需要关注0:可预订 2:已预定 其它:不可预定
      * 桌位显示状态 0:空闲
@@ -33,7 +33,7 @@ public class Point {
     public String tableLableName;//标签：靠窗
     public String position;//位置 0=大厅，1=包间
     public String direction;//方位
-
+    public String remark;//备注
     /**
      * LEFT_WALL:左边的墙
      * TOP_WALL:上边的墙
