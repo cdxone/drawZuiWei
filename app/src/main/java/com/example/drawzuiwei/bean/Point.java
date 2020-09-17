@@ -12,6 +12,13 @@ public class Point {
     public static  String TOP_WALL = "top_wall";
     public static  String RIGHT_WALL = "right_wall";
     public static  String BOTTOM_WALL = "bottom_wall";
+    public static  String ENTRY = "entry"; //入口
+    public static  String WC_NAN = "wc_nan"; //男厕
+    public static  String WC_NV = "wc_nv";//女厕
+    public static  String XLT_1 = "xlt_1";//小料台1
+    public static  String XLT_2 = "xlt_2";//小料台2
+    public static  String XLT_3 = "xlt_3";//小料台3
+
 
     public float xpoint;//原始的位置
     public float ypoint;//原始的位置

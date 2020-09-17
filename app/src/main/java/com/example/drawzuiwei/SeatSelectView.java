@@ -54,8 +54,8 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
 
     //配置
     private float originalWidthHeight = 90; // 图片原始宽高
-    private float PARAM_RATE = 2.5f; // 最终放大的图像是原始尺寸的几倍大小
-    private static final float CHANGE_LENGTH = 3;//每一次变化放大多少
+    private float PARAM_RATE = 2f; // 最终放大的图像是原始尺寸的几倍大小
+    private static final float CHANGE_LENGTH = 2;//每一次变化放大多少
     private static final float BIG_RATE = 1.1f;//放大的比例
     private float lRWallWidthRate = 0.3f;//左右墙的宽度比例
     private float lRWallHeightRate = 20.5f;//左右墙的长度比例
@@ -155,64 +155,16 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
         if (list != null) {
             Log.e(TAG,"绘制开始");
             long start = System.currentTimeMillis();
+
             Canvas canvas = holder.lockCanvas();
             canvas.drawColor(Color.WHITE);
 
-            // 绘制桌位
-            float entryX = 0;
-            float entryY = 0;
-            float wcNanX = 0;
-            float wcNanY = 0;
-            float wcNvX = 0;
-            float wcNvY = 0;
-            float xlt1X = 0;
-            float xlt1Y = 0;
-            float xlt2X = 0;
-            float xlt2Y = 0;
-            float xlt3X = 0;
-            float xlt3Y = 0;
+
             for (int i = 0; i < this.list.size(); i++) {
                 Point item = list.get(i);
-                Log.e("坐标",item.x + "--" + item.y);
                 if (TextUtils.isEmpty(item.tableSpecType)){
                     float x = item.x;
                     float y = item.y;
-
-                    // 保存男女厕所，小料台，入口位置
-                    //绘制男厕所
-                    if (TextUtils.equals(item.tableNo,"55")){
-                        wcNanX = item.x;
-                        wcNanY = item.y + this.widthHeight;
-
-                        wcNvY = wcNanY;
-                    }
-
-                    //绘制女厕所
-                    if (TextUtils.equals(item.tableNo,"22")){
-                        wcNvX = item.x;
-                    }
-
-                    //绘制小料台
-                    if (TextUtils.equals(item.tableNo,"31")){
-                        xlt1X = item.x + widthHeight / 5;
-                        xlt1Y = item.y + widthHeight;
-                    }
-
-                    //绘制小料台
-                    if (TextUtils.equals(item.tableNo,"66")){
-                        xlt2X = item.x - widthHeight * 0.7f - 5;
-                        xlt2Y = item.y + widthHeight * 0.2f;
-                    }
-
-                    if (TextUtils.equals(item.tableNo,"29")){
-                        xlt3X = item.x + widthHeight;
-                        xlt3Y = item.y - widthHeight * 0.8f;
-                    }
-
-                    if (TextUtils.equals(item.tableNo,"65")){
-                        entryY = item.y;
-                    }
-
                     //绘制对应的桌位
                     //1、设置绘制的宽高
                     float width = this.widthHeight;
@@ -287,21 +239,21 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                     Point pointLB = list.get(list.size() - 1);//左下角的点
                     float henLength =   pointRT.x - pointLT.x;//水平方向的变化
                     float shuLength =  pointLB.y - pointLT.y;//竖直方向的变化
-                    if (TextUtils.equals(item.tableSpecType,Point.LEFT_WALL)){
+                    if (TextUtils.equals(item.tableSpecType,Point.LEFT_WALL)){//左边的墙
                         float width = this.widthHeight * lRWallWidthRate;
                         float height = shuLength;
                         if (x + width > 0 && x < containerWidth && y + height > 0 && y < containerHeight) {
                             Bitmap bitmap = big(wallShuBitmap, width , height);
                             canvas.drawBitmap(bitmap, x, y,mZhuoWeiPaint);
                         }
-                    } else if (TextUtils.equals(item.tableSpecType,Point.TOP_WALL)) {
+                    } else if (TextUtils.equals(item.tableSpecType,Point.TOP_WALL)) {//顶部的墙
                         float width = henLength;
                         float height = this.widthHeight * tbWallHeightRate;
                         if (x + width > 0 && x < containerWidth && y + height > 0 && y < containerHeight) {
                             Bitmap bitmap = big(wallHenBitmap,width,height);
                             canvas.drawBitmap(bitmap, x, y,mZhuoWeiPaint);
                         }
-                    }  else if (TextUtils.equals(item.tableSpecType,Point.RIGHT_WALL)) {
+                    }  else if (TextUtils.equals(item.tableSpecType,Point.RIGHT_WALL)) {//右边的墙
                         float width = this.widthHeight * lRWallWidthRate;
                         float height = shuLength;
                         if (x + width > 0 && x < containerWidth && y + height > 0 && y < containerHeight) {
@@ -309,8 +261,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                             // 注意对x值进行了修订
                             canvas.drawBitmap(bitmap, x - width, y,mZhuoWeiPaint);
                         }
-                        entryX = x - widthHeight * 2.5f -width;
-                    } else if (TextUtils.equals(item.tableSpecType,Point.BOTTOM_WALL)) {
+                    } else if (TextUtils.equals(item.tableSpecType,Point.BOTTOM_WALL)) {//底部的墙
                         float width = henLength;
                         float height = this.widthHeight * tbWallHeightRate;
                         if (x + width > 0 && x < containerWidth && y + height > 0 && y < containerHeight) {
@@ -318,46 +269,57 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                             // 注意对y值进行了修订
                             canvas.drawBitmap(bitmap, x, y - height,mZhuoWeiPaint);
                         }
+                    } else if (TextUtils.equals(item.tableSpecType,Point.ENTRY)){//入口
+                        float width = widthHeight * 2.5f;
+                        float height = widthHeight * 1.5f;
+                        if (x + width > 0 && x < containerWidth && y + height > 0 && y < containerHeight) {
+                            Bitmap bitmap = big(entryBitmap,width,height);
+                            canvas.drawBitmap(bitmap, x, y,mZhuoWeiPaint);
+                        }
+                    } else if (TextUtils.equals(item.tableSpecType,Point.WC_NAN)){
+                        float width = widthHeight * 1.5f;
+                        float height = widthHeight * 1.5f;
+                        if (x + width > 0 && x < containerWidth && y + height > 0 && y < containerHeight) {
+                            Bitmap bitmap = big(wcNamBitmap,width,height);
+                            canvas.drawBitmap(bitmap, x, y,mZhuoWeiPaint);
+                        }
+                    } else if (TextUtils.equals(item.tableSpecType,Point.WC_NV)){
+                        float width = widthHeight * 1.5f;
+                        float height = widthHeight * 1.5f;
+                        if (x + width > 0 && x < containerWidth && y + height > 0 && y < containerHeight) {
+                            Bitmap bitmap = big(wcNvBitmap,width,height);
+                            canvas.drawBitmap(bitmap, x, y,mZhuoWeiPaint);
+                        }
+                    } else if (TextUtils.equals(item.tableSpecType,Point.XLT_1)){
+                        float width = widthHeight * 1.2f;
+                        float height = widthHeight * 0.6f;
+                        if (x + width > 0 && x < containerWidth && y + height > 0 && y < containerHeight) {
+                            Bitmap bitmap = big(xltHenBitmap,width,height);
+                            canvas.drawBitmap(bitmap, x, y,mZhuoWeiPaint);
+                        }
+                    } else if (TextUtils.equals(item.tableSpecType,Point.XLT_2)){
+                        float width = widthHeight * 0.7f;
+                        float height = widthHeight * 1.2f;
+                        if (x + width > 0 && x < containerWidth && y + height > 0 && y < containerHeight) {
+                            Bitmap bitmap = big(xltShuBitmap,width,height);
+                            canvas.drawBitmap(bitmap, x, y,mZhuoWeiPaint);
+                        }
+                    } else if (TextUtils.equals(item.tableSpecType,Point.XLT_3)){
+                        float width = widthHeight * 1.2f;
+                        float height = widthHeight * 0.6f;
+                        if (x + width > 0 && x < containerWidth && y + height > 0 && y < containerHeight) {
+                            Bitmap bitmap = big(xltHenBitmap,width,height);
+                            canvas.drawBitmap(bitmap, x, y,mZhuoWeiPaint);
+                        }
                     }
                 }
             }
-
-            // 绘制男厕、女厕、小料台、入口
-            // 入口
-            if (entryX > 0 && entryY > 0){
-                Bitmap entryBitmapTemp = big(entryBitmap,widthHeight * 2.5f,widthHeight * 1.5f);
-                canvas.drawBitmap(entryBitmapTemp,entryX,entryY,mZhuoWeiPaint);
-            }
-            // 男厕
-            if (wcNanX > 0 && wcNanY > 0){
-                Bitmap wcNamBitmapTemp = big(wcNamBitmap,widthHeight * 1.5f,widthHeight * 1.5f);
-                canvas.drawBitmap(wcNamBitmapTemp,wcNanX,wcNanY,mZhuoWeiPaint);
-            }
-            // 女厕
-            if (wcNvX > 0 && wcNvY > 0){
-                Bitmap wcNvBitmapTemp = big(wcNvBitmap,widthHeight * 1.5f,widthHeight * 1.5f);
-                canvas.drawBitmap(wcNvBitmapTemp,wcNvX,wcNvY,mZhuoWeiPaint);
-            }
-            // 小料台1
-            if (xlt1X > 0 && xlt1Y > 0){
-                Bitmap xltHenBitmapTemp = big(xltHenBitmap,widthHeight * 1.5f,widthHeight * 0.7f);
-                canvas.drawBitmap(xltHenBitmapTemp,xlt1X,xlt1Y,mZhuoWeiPaint);
-            }
-            // 小料台2
-            if (xlt2X > 0 && xlt2Y > 0){
-                Bitmap xltShuBitmapTemp = big(xltShuBitmap,widthHeight * 0.7f,widthHeight * 1.5f);
-                canvas.drawBitmap(xltShuBitmapTemp,xlt2X,xlt2Y,mZhuoWeiPaint);
-            }
-            // 小料台3
-            if (xlt3X > 0 && xlt3Y > 0){
-                Bitmap xltHenBitmapTemp2 = big(xltHenBitmap,widthHeight * 1.2f,widthHeight * 0.7f);
-                canvas.drawBitmap(xltHenBitmapTemp2,xlt3X,xlt3Y,mZhuoWeiPaint);
-            }
             //drawTest(canvas);
+            canvas.save();
 
             holder.unlockCanvasAndPost(canvas);
             long end = System.currentTimeMillis();
-            Log.e(TAG,"时间:" + (end - start));
+            Log.e("时间","总共时间:" + (end - start));
         }
     }
 
@@ -417,7 +379,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
         // 获得容器的宽高
         containerWidth = getWidth();
         containerHeight = getHeight();
-        widthHeight = containerWidth / 9;
+        widthHeight = containerWidth / 11;
         
         // 获取原始数据xpoint和ypoint的最大值和最小值
         MaxMin maxMinPoint = getMaxMinPoint();
@@ -465,7 +427,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
         // 页面缩放了，那么对应的图片的宽高也应该进行缩放
         widthHeight = widthHeight * containerWidth / (containerWidth + widthHeight);
 
-        // 为了显示四周的墙，必须要对桌位进行缩放
+        // 为了显示四周的墙，必须要对桌位进行缩放,
         float suoXiaoRate = (containerWidth - CHANGE_MIN_LENGTH) * 1.0f / containerWidth;
         for (int i = 0; i < list.size(); i++) {
             Point item = list.get(i);
@@ -477,16 +439,90 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
         widthHeight = widthHeight *  (containerWidth - CHANGE_MIN_LENGTH) * 1.0f / containerWidth;
         originalWidthHeight = widthHeight;
 
+        //添加小料台、男厕、女厕、入口等
+        float entryX = 0;
+        float entryY = 0;
+        float wcNanX = 0;
+        float wcNanY = 0;
+        float wcNvX = 0;
+        float wcNvY = 0;
+        float xlt1X = 0;
+        float xlt1Y = 0;
+        float xlt2X = 0;
+        float xlt2Y = 0;
+        float xlt3X = 0;
+        float xlt3Y = 0;
+        for (int i = 0; i < list.size(); i++) {
+            Point item = list.get(i);
+            item.x = item.x * suoXiaoRate + CHANGE_MIN_LENGTH / 2;
+            item.y = item.y * suoXiaoRate + CHANGE_MIN_LENGTH / 2;
+            // 保存男女厕所，小料台，入口位置
+            if (TextUtils.equals(item.tableNo,"55")){
+                //绘制男厕所
+                wcNanX = item.x;
+                wcNanY = item.y + this.widthHeight;
+
+                wcNvY = wcNanY;
+            } else if (TextUtils.equals(item.tableNo,"22")){
+                //绘制女厕所
+                wcNvX = item.x;
+            } else if (TextUtils.equals(item.tableNo,"31")){
+                //绘制小料台
+                xlt1X = item.x + widthHeight / 5;
+                xlt1Y = item.y + widthHeight;
+            } else if (TextUtils.equals(item.tableNo,"66")){
+                //绘制小料台
+                xlt2X = item.x - widthHeight * 0.7f - 5;
+                xlt2Y = item.y + widthHeight * 0.2f;
+            }else if (TextUtils.equals(item.tableNo,"29")){
+                xlt3X = item.x;
+                xlt3Y = item.y - widthHeight * 0.8f;
+            }else if (TextUtils.equals(item.tableNo,"65")){
+                entryY = item.y;
+            }
+        }
+
+        // 添加小料台、入口、男厕、女厕
+        Point entry = new Point(Point.ENTRY);
+        entry.x = containerWidth - WALL_OFFSET - widthHeight * 2.5f;
+        entry.y = entryY;
+        Point wcNan = new Point(Point.WC_NAN);
+        wcNan.x = wcNanX;
+        wcNan.y = wcNanY;
+        Point wcNv = new Point(Point.WC_NV);
+        wcNv.x = wcNvX;
+        wcNv.y = wcNvY;
+        Point xlt_1 = new Point(Point.XLT_1);
+        xlt_1.x = xlt1X;
+        xlt_1.y = xlt1Y;
+        Point xlt_2 = new Point(Point.XLT_2);
+        xlt_2.x = xlt2X;
+        xlt_2.y = xlt2Y;
+        Point xlt_3 = new Point(Point.XLT_3);
+        xlt_3.x = xlt3X;
+        xlt_3.y = xlt3Y;
+
+        list.add(entry);
+        list.add(wcNan);
+        list.add(wcNv);
+        list.add(xlt_1);
+        list.add(xlt_2);
+        list.add(xlt_3);
+
         //添加4个墙
+        // 左墙
         Point leftWall = new Point(Point.LEFT_WALL);
         leftWall.x = WALL_OFFSET;
         leftWall.y = WALL_OFFSET;
+        // 上墙
         Point topWall = new Point(Point.TOP_WALL);
         topWall.x = WALL_OFFSET;
         topWall.y = WALL_OFFSET;
+        // 右墙
         Point rightWall = new Point(Point.RIGHT_WALL);
         rightWall.x = containerWidth - WALL_OFFSET;
         rightWall.y = WALL_OFFSET;
+        // 下墙
         Point bottomWall = new Point(Point.BOTTOM_WALL);
         bottomWall.x = WALL_OFFSET;
         bottomWall.y = containerHeight-WALL_OFFSET;
@@ -625,7 +661,12 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
         //锁屏会导致执行surfaceViewDestroy方法，所以页面清空
         //解锁会执行surfaceViewCreated方法
         if (list.size() > 0){
-            drawImg();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    drawImg();
+                }
+            }).start();
         }
     }
 
@@ -811,14 +852,15 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                     }
                 }
 //                invalidate();
-                drawImg();
+                //drawImg();
                 // 保存上一时刻的信息
                 beforePointOneX = nowPointOneX;
                 beforePointOneY = nowPointOneY;
                 beforePointTwoX = nowPointTwoX;
                 beforePointTwoY = nowPointTwoY;
             }
-        } else {
+        }
+        else {
             //单个手指
             if (event.getAction() == MotionEvent.ACTION_DOWN) {
                 downX = event.getX();
@@ -1016,6 +1058,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                 item.y = clickY - longDistance * sinValue;
             }
         }
+        long end = System.currentTimeMillis();
         // 5、绘制
         drawImg();
         // 6、根据条件判断是否要继续绘制
