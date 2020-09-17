@@ -302,7 +302,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                 }
             }
 
-            drawTest(canvas);
+            //drawTest(canvas);
 
             holder.unlockCanvasAndPost(canvas);
             long end = System.currentTimeMillis();
