@@ -54,6 +54,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
     private float PARAM_RATE = 2.5f; // 最终放大的图像是原始尺寸的几倍大小
     private static final float CHANGE_LENGTH = 3;//每一次变化放大多少
     private float CHANGE_MIN_LENGTH = 160;//
+    private float WALL_OFFSET = 20;//墙距离的偏移量
 
     //数据
     private ArrayList<Point> list;
@@ -137,68 +138,77 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
             long start = System.currentTimeMillis();
             Canvas canvas = holder.lockCanvas();
             canvas.drawColor(Color.WHITE);
+
             for (int i = 0; i < this.list.size(); i++) {
                 Point item = list.get(i);
-                float x = item.x;
-                float y = item.y;
+                if (TextUtils.isEmpty(item.tableSpecType)){
+                    float x = item.x;
+                    float y = item.y;
+                    //绘制对应的桌位
+                    //1、设置绘制的宽高
+                    float width = this.widthHeight;
+                    float height = this.widthHeight;
+                    //2、给数据源重新设置状态：当前状态不为可预订，不为已预订，不为选择状态，那么为不可选状态
+                    if (!TextUtils.equals(item.tableStatus,"0")&&!TextUtils.equals(item.tableStatus,"2")&&!TextUtils.equals(item.tableStatus,Point.MY_CHECK)){
+                        item.tableStatus = "1";
+                    }
+                    // 屏幕以外不参与绘制
+                    if (x + width < 0 || y + height < 0 || x > containerWidth || y > containerHeight){
+                        continue;
+                    }
+                    //3、如果是选择状态，绘制红色背景和白色的对勾
+                    // 6人桌需要增加额外的配置,向左开，向右开
+                    String extra = "";
+                    if (item.remark != null
+                            && !TextUtils.isEmpty(item.remark.trim())
+                            && (TextUtils.equals("r",item.remark) || TextUtils.equals("l",item.remark))){
+                        extra = "_" + item.remark;
+                    }
+                    if (TextUtils.equals(item.tableStatus,Point.MY_CHECK)){
+                        // 绘制红色背景
+                        String key = "reserve" + "_" + item.capacity + "_" + item.position + "_" + "state2"  + "_" + item.direction + extra;
+                        Bitmap bitmapTemp = bitmapMap.get(key);
+                        Bitmap bitmap = big(bitmapTemp, width, height);
+                        if (bitmap != null) {
+                            canvas.drawBitmap(bitmap, x, y, mZhuoWeiPaint);
+                        }
+                        // 居中白色对勾
+                        float duigouWidth = width / 2;
+                        float duigouHeight = height / 2;
+                        Bitmap bitmapDuiGou = big(checkBitmap,width / 2, height / 2);
+                        canvas.drawBitmap(bitmapDuiGou,x + width / 2 - duigouWidth / 2,y + height / 2 - duigouHeight / 2 ,mZhuoWeiPaint);
+                    } else {
+                        //4、如果不是选择状态，根据状态设置不同的图片
+                        String key = "reserve" + "_" + item.capacity + "_" + item.position + "_" + "state" + item.tableStatus + "_" + item.direction + extra;
+                        Bitmap bitmapTemp = bitmapMap.get(key);
+                        Bitmap bitmap = big(bitmapTemp, width, height);
+                        if (bitmap != null) {
+                            canvas.drawBitmap(bitmap, x, y, mZhuoWeiPaint);
+                        }
+                    }
 
-                //绘制对应的桌位
-                //1、设置绘制的宽高
-                float width = this.widthHeight;
-                float height = this.widthHeight;
-                //2、给数据源重新设置状态：当前状态不为可预订，不为已预订，不为选择状态，那么为不可选状态
-                if (!TextUtils.equals(item.tableStatus,"0")&&!TextUtils.equals(item.tableStatus,"2")&&!TextUtils.equals(item.tableStatus,Point.MY_CHECK)){
-                    item.tableStatus = "1";
-                }
-                // 屏幕以外不参与绘制
-                if (x + width < 0 || y + height < 0 || x > containerWidth || y > containerHeight){
-                    continue;
-                }
-                //3、如果是选择状态，绘制红色背景和白色的对勾
-                if (TextUtils.equals(item.tableStatus,Point.MY_CHECK)){
-                    // 绘制红色背景
-                    String key = "reserve" + "_" + item.capacity + "_" + item.position + "_" + "state2"  + "_" + item.direction;
-                    Bitmap bitmapTemp = bitmapMap.get(key);
-                    Bitmap bitmap = big(bitmapTemp, width, height);
-                    if (bitmap != null) {
-                        canvas.drawBitmap(bitmap, x, y, mZhuoWeiPaint);
+                    // 绘制对应的座位号
+                    // 如果不是选择状态，才绘制桌位号
+                    if (!TextUtils.equals(item.tableStatus,Point.MY_CHECK)){
+                        // 1、缩放的比例
+                        float rateTemp = this.widthHeight / this.originalWidthHeight;
+                        // 2、设置画笔状态
+                        mZhuoWeiNumPaint.setTextSize(mZhuoWeiFontSize * rateTemp);
+                        if (TextUtils.equals(item.tableStatus,"0") || TextUtils.equals(item.tableStatus,"2")){//可预订和不可预定，画笔设置为白色
+                            mZhuoWeiNumPaint.setColor(mZhuoWeiWhiteColor);
+                        } else if (!TextUtils.equals(item.tableStatus,"0") && !TextUtils.equals(item.tableStatus,"2")){//不可预定，画笔设置为灰色
+                            mZhuoWeiNumPaint.setColor(mZhuoWeiGrayColor);
+                        }
+                        // 3、求得文字对应的宽高
+                        float textHeight = measureTextHeight(mZhuoWeiNumPaint) * 2 / 3;
+                        String tableNo = item.tableNo;// 桌号
+                        float textWidth = mZhuoWeiNumPaint.measureText(tableNo);//桌号的宽度
+                        // 4、计算中心点的位置
+                        float centerX = x + width / 2;
+                        float centerY = y + height / 2;
+                        // 5、绘制桌位文字
+                        canvas.drawText(tableNo, centerX - textWidth / 2, centerY + textHeight / 2, mZhuoWeiNumPaint);
                     }
-                    // 居中白色对勾
-                    float duigouWidth = width / 2;
-                    float duigouHeight = height / 2;
-                    Bitmap bitmapDuiGou = big(checkBitmap,width / 2, height / 2);
-                    canvas.drawBitmap(bitmapDuiGou,x + width / 2 - duigouWidth / 2,y + height / 2 - duigouHeight / 2 ,mZhuoWeiPaint);
-                } else {
-                    //4、如果不是选择状态，根据状态设置不同的图片
-                    String key = "reserve" + "_" + item.capacity + "_" + item.position + "_" + "state" + item.tableStatus + "_" + item.direction;
-                    Bitmap bitmapTemp = bitmapMap.get(key);
-                    Bitmap bitmap = big(bitmapTemp, width, height);
-                    if (bitmap != null) {
-                        canvas.drawBitmap(bitmap, x, y, mZhuoWeiPaint);
-                    }
-                }
-
-                // 绘制对应的座位号
-                // 如果不是选择状态，才绘制桌位号
-                if (!TextUtils.equals(item.tableStatus,Point.MY_CHECK)){
-                    // 1、缩放的比例
-                    float rateTemp = this.widthHeight / this.originalWidthHeight;
-                    // 2、设置画笔状态
-                    mZhuoWeiNumPaint.setTextSize(mZhuoWeiFontSize * rateTemp);
-                    if (TextUtils.equals(item.tableStatus,"0") || TextUtils.equals(item.tableStatus,"2")){//可预订和不可预定，画笔设置为白色
-                        mZhuoWeiNumPaint.setColor(mZhuoWeiWhiteColor);
-                    } else if (!TextUtils.equals(item.tableStatus,"0") && !TextUtils.equals(item.tableStatus,"2")){//不可预定，画笔设置为灰色
-                        mZhuoWeiNumPaint.setColor(mZhuoWeiGrayColor);
-                    }
-                    // 3、求得文字对应的宽高
-                    float textHeight = measureTextHeight(mZhuoWeiNumPaint) * 2 / 3;
-                    String tableNo = item.tableNo;// 桌号
-                    float textWidth = mZhuoWeiNumPaint.measureText(tableNo);//桌号的宽度
-                    // 4、计算中心点的位置
-                    float centerX = x + width / 2;
-                    float centerY = y + height / 2;
-                    // 5、绘制桌位文字
-                    canvas.drawText(tableNo, centerX - textWidth / 2, centerY + textHeight / 2, mZhuoWeiNumPaint);
                 }
             }
             Log.e(TAG,"绘制完成");
@@ -329,6 +339,99 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
         // 页面缩放了，对应的桌子大小也得跟着缩放
         widthHeight = widthHeight *  (containerWidth - CHANGE_MIN_LENGTH) * 1.0f / containerWidth;
         originalWidthHeight = widthHeight;
+
+        //添加小料台、男厕、女厕、入口等
+        float entryX = 0;
+        float entryY = 0;
+        float wcNanX = 0;
+        float wcNanY = 0;
+        float wcNvX = 0;
+        float wcNvY = 0;
+        float xlt1X = 0;
+        float xlt1Y = 0;
+        float xlt2X = 0;
+        float xlt2Y = 0;
+        float xlt3X = 0;
+        float xlt3Y = 0;
+        for (int i = 0; i < list.size(); i++) {
+            Point item = list.get(i);
+            item.x = item.x * suoXiaoRate + CHANGE_MIN_LENGTH / 2;
+            item.y = item.y * suoXiaoRate + CHANGE_MIN_LENGTH / 2;
+            // 保存男女厕所，小料台，入口位置
+            if (TextUtils.equals(item.tableNo,"55")){
+                //绘制男厕所
+                wcNanX = item.x;
+                wcNanY = item.y + this.widthHeight;
+
+                wcNvY = wcNanY;
+            } else if (TextUtils.equals(item.tableNo,"22")){
+                //绘制女厕所
+                wcNvX = item.x;
+            } else if (TextUtils.equals(item.tableNo,"31")){
+                //绘制小料台
+                xlt1X = item.x + widthHeight / 5;
+                xlt1Y = item.y + widthHeight;
+            } else if (TextUtils.equals(item.tableNo,"66")){
+                //绘制小料台
+                xlt2X = item.x - widthHeight * 0.7f - 5;
+                xlt2Y = item.y + widthHeight * 0.2f;
+            }else if (TextUtils.equals(item.tableNo,"29")){
+                xlt3X = item.x;
+                xlt3Y = item.y - widthHeight * 0.8f;
+            }else if (TextUtils.equals(item.tableNo,"65")){
+                entryY = item.y;
+            }
+        }
+
+        // 添加小料台、入口、男厕、女厕
+        Point entry = new Point(Point.ENTRY);
+        entry.x = containerWidth - WALL_OFFSET - widthHeight * 2.5f;
+        entry.y = entryY;
+        Point wcNan = new Point(Point.WC_NAN);
+        wcNan.x = wcNanX;
+        wcNan.y = wcNanY;
+        Point wcNv = new Point(Point.WC_NV);
+        wcNv.x = wcNvX;
+        wcNv.y = wcNvY;
+        Point xlt_1 = new Point(Point.XLT_1);
+        xlt_1.x = xlt1X;
+        xlt_1.y = xlt1Y;
+        Point xlt_2 = new Point(Point.XLT_2);
+        xlt_2.x = xlt2X;
+        xlt_2.y = xlt2Y;
+        Point xlt_3 = new Point(Point.XLT_3);
+        xlt_3.x = xlt3X;
+        xlt_3.y = xlt3Y;
+
+        list.add(entry);
+        list.add(wcNan);
+        list.add(wcNv);
+        list.add(xlt_1);
+        list.add(xlt_2);
+        list.add(xlt_3);
+
+        //添加4个墙
+        // 左墙
+        Point leftWall = new Point(Point.LEFT_WALL);
+        leftWall.x = WALL_OFFSET;
+        leftWall.y = WALL_OFFSET;
+        // 上墙
+        Point topWall = new Point(Point.TOP_WALL);
+        topWall.x = WALL_OFFSET;
+        topWall.y = WALL_OFFSET;
+        // 右墙
+        Point rightWall = new Point(Point.RIGHT_WALL);
+        rightWall.x = containerWidth - WALL_OFFSET;
+        rightWall.y = WALL_OFFSET;
+        // 下墙
+        Point bottomWall = new Point(Point.BOTTOM_WALL);
+        bottomWall.x = WALL_OFFSET;
+        bottomWall.y = containerHeight-WALL_OFFSET;
+
+        list.add(leftWall);
+        list.add(topWall);
+        list.add(rightWall);
+        list.add(bottomWall);
     }
 
     /**
