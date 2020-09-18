@@ -55,7 +55,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
     //配置
     private float originalWidthHeight = 90; // 图片原始宽高
     private float PARAM_RATE = 2f; // 最终放大的图像是原始尺寸的几倍大小
-    private static final float CHANGE_LENGTH = 2;//每一次变化放大多少
+    private static final float CHANGE_LENGTH = 3;//每一次变化放大多少
     private static final float BIG_RATE = 1.1f;//放大的比例
     private float lRWallWidthRate = 0.3f;//左右墙的宽度比例
     private float lRWallHeightRate = 20.5f;//左右墙的长度比例
@@ -161,6 +161,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
 
 
             for (int i = 0; i < this.list.size(); i++) {
+                long startTemp = System.currentTimeMillis();
                 Point item = list.get(i);
                 if (TextUtils.isEmpty(item.tableSpecType)){
                     float x = item.x;
@@ -175,6 +176,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                     }
                     // 屏幕以外不参与绘制
                     if (x + width < 0 || y + height < 0 || x > containerWidth || y > containerHeight){
+                        Log.e("不参与","不参与绘制");
                         continue;
                     }
                     //3、如果是选择状态，绘制红色背景和白色的对勾
@@ -313,6 +315,8 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                         }
                     }
                 }
+                long endTemp = System.currentTimeMillis();
+                Log.e("每一个数据",endTemp - startTemp + "");
             }
             //drawTest(canvas);
             canvas.save();
