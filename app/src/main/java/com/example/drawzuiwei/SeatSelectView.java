@@ -53,7 +53,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
     };
 
     //配置
-    private float originalWidthHeight = 90; // 图片原始宽高
+    private float originalWidthHeight = 80; // 图片原始宽高
     private float PARAM_RATE = 2f; // 最终放大的图像是原始尺寸的几倍大小
     private static final float CHANGE_LENGTH = 3;//每一次变化放大多少
     private static final float BIG_RATE = 1.1f;//放大的比例
@@ -383,7 +383,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
         // 获得容器的宽高
         containerWidth = getWidth();
         containerHeight = getHeight();
-        widthHeight = containerWidth / 11;
+        widthHeight = containerWidth / 10.5f;
         
         // 获取原始数据xpoint和ypoint的最大值和最小值
         MaxMin maxMinPoint = getMaxMinPoint();
