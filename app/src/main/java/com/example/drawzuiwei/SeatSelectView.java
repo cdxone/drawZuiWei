@@ -53,6 +53,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
     private float originalWidthHeight = 60; // 图片原始宽高
     private float PARAM_RATE = 2.5f; // 最终放大的图像是原始尺寸的几倍大小
     private static final float CHANGE_LENGTH = 3;//每一次变化放大多少
+    private float CHANGE_MIN_LENGTH = 160;//
 
     //数据
     private ArrayList<Point> list;
@@ -234,16 +235,50 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
         drawImg();
     }
 
+    /**
+     * 求得最大值和最小值
+     * @return
+     */
+    private MaxMin getMaxMinPoint() {
+        float maxXPoint = 0;
+        float minXPoint = 0;
+        float maxYPoint = 0;
+        float minYPoint = 0;
+        for (int i = 0; i < this.list.size(); i++) {
+            Point item = this.list.get(i);
+            if (i == 0) {
+                maxXPoint = item.xpoint;
+                minXPoint = item.xpoint;
+                maxYPoint = item.ypoint;
+                minYPoint = item.ypoint;
+            }
+            if (item.xpoint > maxXPoint) {
+                maxXPoint = item.xpoint;
+            }
+            if (item.xpoint < minXPoint) {
+                minXPoint = item.xpoint;
+            }
+            if (item.ypoint > maxYPoint) {
+                maxYPoint = item.ypoint;
+            }
+            if (item.ypoint < minYPoint) {
+                minYPoint = item.ypoint;
+            }
+        }
+        return new MaxMin(maxXPoint,minXPoint,maxYPoint,minYPoint);
+    }
+
     private void initParams() {
         // 获得容器的宽高
         containerWidth = getWidth();
         containerHeight = getHeight();
+
         // 获取xpoint和ypoint的最大值和最小值
-        MaxMin maxMin = getMaxMin();
-        float maxXPoint = maxMin.maxXPoint;
-        float minXPoint = maxMin.minXPoint;
-        float maxYPoint = maxMin.maxYPoint;
-        float minYPoint = maxMin.minYPoint;
+        MaxMin maxMinPoint = getMaxMinPoint();
+        float maxXPoint = maxMinPoint.maxXPoint;
+        float minXPoint = maxMinPoint.minXPoint;
+        float maxYPoint = maxMinPoint.maxYPoint;
+        float minYPoint = maxMinPoint.minYPoint;
 
         // 求得他们变化的范围
         float changeX = maxXPoint - minXPoint;
@@ -251,25 +286,49 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
 
         // 将他们变化的范围放大1.2倍
         float rate = 1.2f;
-        float screenWidth = changeX * rate;
+        float screenWidth = changeX;
         float screenHeight = changeY * rate;
 
-        // 对坐标进行调整，删除两边留白，同事增加一个边界
+        // 对坐标进行调整，删除两边留白，同事增加一个边界,让坐标居中
         for (int i = 0; i < this.list.size(); i++) {
             Point item = list.get(i);
-            item.ypoint = item.ypoint - minYPoint + (screenHeight - changeY) / 2;
             item.xpoint = item.xpoint - minXPoint + (screenWidth - changeX) / 2;
+            item.ypoint = item.ypoint - minYPoint + (screenHeight - changeY) / 2;
         }
 
-        // 宽高比
-        float rateHW = screenHeight / screenWidth;
+        // 宽度 > 高度,那么旋转展示
+        if (screenWidth > screenHeight + 100){
+            // 计算座位在页面上的位置（位置颠倒）
+            for (int i = 0; i < this.list.size(); i++) {
+                Point item = list.get(i);
+                item.x = containerWidth * (screenHeight - item.ypoint) / screenHeight;
+                item.y = containerWidth / screenHeight * item.xpoint;
+            }
+        } else {
+            // 宽度 < 高度，说明是竖直方向，那么不再旋转
+            for (int i = 0; i < this.list.size(); i++) {
+                Point item = list.get(i);
+                // containerWidth / screenWidth：是缩放比例，是电脑屏幕向手机屏幕的缩放比例
+                // containerWidth / (containerWidth + widthHeight):由于按照坐标绘制，发现按照x的最大值绘制的图片会超出屏幕，所以进行缩放
+                item.x = containerWidth / screenWidth * item.xpoint * containerWidth / (containerWidth + widthHeight);
+                item.y = containerWidth / screenWidth * item.ypoint * containerWidth / (containerWidth + widthHeight);
+            }
+        }
 
-        // 计算座位在页面上的位置（位置颠倒）
-        for (int i = 0; i < this.list.size(); i++) {
+        // 页面缩放了，那么对应的图片的宽高也应该进行缩放
+        widthHeight = widthHeight * containerWidth / (containerWidth + widthHeight);
+
+        // 为了显示四周的墙，必须要对桌位进行缩放,
+        float suoXiaoRate = (containerWidth - CHANGE_MIN_LENGTH) * 1.0f / containerWidth;
+        for (int i = 0; i < list.size(); i++) {
             Point item = list.get(i);
-            item.x = containerWidth * (screenHeight - item.ypoint) / screenHeight;
-            item.y = containerWidth / screenHeight * item.xpoint;
+            item.x = item.x * suoXiaoRate + CHANGE_MIN_LENGTH / 2;
+            item.y = item.y * suoXiaoRate + CHANGE_MIN_LENGTH / 2;
         }
+
+        // 页面缩放了，对应的桌子大小也得跟着缩放
+        widthHeight = widthHeight *  (containerWidth - CHANGE_MIN_LENGTH) * 1.0f / containerWidth;
+        originalWidthHeight = widthHeight;
     }
 
     /**

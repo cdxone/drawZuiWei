@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
 
         // 解析数据
         list = new ArrayList<>();
-        String date = MyDate.dateWangJing;
+        String date = MyDate.dataXuanZhuan;
         JSONObject jsonObject = JSONObject.parseObject(date);
         JSONArray records = jsonObject.getJSONArray("tableAllowance");
         for (int i = 0; i < records.size(); i++) {
