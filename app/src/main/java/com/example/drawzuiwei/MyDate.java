@@ -2687,7 +2687,7 @@ public class MyDate {
             "            \"xpoint\":597,\n" +
             "            \"ypoint\":346,\n" +
             "            \"tableLableName\":\"近小料台,普通\",\n" +
-            "            \"tableStatus\":3,\n" +
+            "            \"tableStatus\":2,\n" +
             "            \"direction\":1002,\n" +
             "            \"remark\":\"12\"\n" +
             "        },\n" +

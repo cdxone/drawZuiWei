@@ -19,6 +19,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.widget.Toast;
 
 import com.example.drawzuiwei.bean.Point;
 
@@ -389,7 +390,7 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
         float changeY = maxYPoint - minYPoint;
 
         // 将他们变化的范围放大1.2倍
-        float rate = 1.2f;
+        float rate = 1.1f;
         float screenWidth = changeX;
         float screenHeight = changeY * rate;
 
@@ -908,6 +909,8 @@ public class SeatSelectView extends SurfaceView implements SurfaceHolder.Callbac
                             selectIndex = i;
                         } else if (TextUtils.equals(item.tableStatus, Point.MY_CHECK)){
                             selectIndex = i;
+                        } else {
+                            Toast.makeText(mContext, "该餐位已被预定，请重新勾选", Toast.LENGTH_SHORT).show();
                         }
                         clickXTemp = item.x;
                         clickYTemp = item.y;
